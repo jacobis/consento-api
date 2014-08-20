@@ -4,15 +4,39 @@
 # Packaging files:
 *.egg*
 
-# Editor temp files:
-*.swp
-*~
-
 # Sphinx docs:
 build
 
 # SQLite3 database files:
 *.db
 
+# Logs:
+*.log
+
+# Eclipse
+.project
+.pydevproject
+.settings
+
 # Celerybeat scheduler file:
 celerybeat-schedule
+
+# Mac
+.DS_Store
+._*
+
+# Linux Editors
+*~
+\#*\#
+/.emacs.desktop
+/.emacs.desktop.lock
+.elc
+auto-save-list
+tramp
+.\#*
+*.swp
+*.swo
+
+# Windows
+Thumbs.db
+Desktop.ini

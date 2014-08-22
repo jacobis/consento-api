@@ -3,37 +3,64 @@ import json
 from bs4 import BeautifulSoup as bs
 
 from django.http import HttpResponse
+from django.views.decorators.csrf import csrf_exempt
+
+from libs.utils.json_wrapper import wrap_success_json, wrap_failure_json
 
 
-def get_restaurants(request):
+@csrf_exempt
+def restaurants(request):
+    if request.method == 'GET':
+        '''
+        Return restaurant list ordered by 9platters rank base.
 
-    # Get Parameter from URL.
-    vid = request.GET['vid']
-    query = request.GET['query']
+        Args:
+            vid: vender id (*)
+            locate: city, state (*)
+            query: any query (*)
 
-    # Get Cite, State from locate.
-    locate = request.GET['locate'].split(',')
-    cite = locate[0]
-    state = locate[1]
+            (e.g.) curl -i -H "Accept: application/json" -X GET "http://localhost:8000/restaurants/?vid=99999&locate=San+Francisco,CA&query=pizza"
 
-    t = 'l'
-    wt = 'xml'
+        Return:
+            Result data is following format:
+            {"restaurants": ["936129", "1305429", "994629", "917229", "1002629", "1045029", "1091329", "1093029", "1099629", "1091829"]}
+        '''
 
-    # Create URL.
-    url = 'http://9platters.com/s'
-    params = {'q': query, 't': t, 'wt': wt, 'ostate': state, 'ocity': cite}
+        try:
+            # Get Parameter from URL.
+            vid = request.GET['vid']
+            query = request.GET['query']
 
-    # Get XML from 9platters.
-    response = requests.get(url, params=params)
-    response = response.content
+            # Get City, State from locate.
+            locate = request.GET['locate'].split(',')
+            city = locate[0]
+            state = locate[1]
 
-    # Parse XML.
-    response = bs(response)
-    objects = response.find_all('object')
-    objects = [obj.get('id') for obj in objects]
+            t = 'l'
+            wt = 'xml'
 
-    # Make Context.
-    json_dic = {'objects': objects}
-    context = json.dumps(json_dic)
+            # Create URL.
+            url = 'http://9platters.com/s'
+            params = {'q': query, 't': t, 'wt': wt, 'ostate': state, 'ocity': city}
 
-    return HttpResponse(context, content_type='application/json')
+            # Get XML from 9platters.
+            response = requests.get(url, params=params)
+
+            # Parse XML.
+            response = bs(response.content)
+            objects = response.find_all('object')
+            
+            objects = [obj.get('id') for obj in objects]
+
+            # Make Context.
+            context = {'restaurants': objects}
+
+            return HttpResponse(wrap_success_json(context), content_type='application/json')
+        except:
+            context = "Error."
+
+            return HttpResponse(wrap_failure_json(context), content_type='application/json')
+
+    else:
+        context = 'Allowed only GET method.'
+        return HttpResponse(wrap_failure_json(context), content_type='application/json')

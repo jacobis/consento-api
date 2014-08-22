@@ -14,5 +14,5 @@ urlpatterns = patterns('',
 )
 
 urlpatterns += patterns('',
-    url(r'^restaurants/$', 'apps.consento_api.views.get_restaurants'),
+    url(r'^restaurants/$', 'apps.consento_api.views.restaurants'),
 )

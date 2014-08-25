@@ -70,6 +70,6 @@ MIDDLEWARE_CLASSES += (
 )
 
 DEBUG_TOOLBAR_CONFIG = {
-    'INTERCEPT_REDIRECTS': False,
+    'DISABLE_PANELS': set(['debug_toolbar.panels.redirects.RedirectsPanel'])
 }
 ########## END TOOLBAR CONFIGURATION

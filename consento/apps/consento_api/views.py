@@ -12,14 +12,14 @@ from libs.utils.json_wrapper import wrap_success_json, wrap_failure_json
 def restaurants(request):
     if request.method == 'GET':
         '''
-        Return restaurant list ordered by 9platters rank base.
+        Return restaurant list ordered by consento rank-base.
 
         Args:
             vid: vender id (*)
             locate: city, state (*)
             query: any query (*)
 
-            (e.g.) curl -i -H "Accept: application/json" -X GET "http://localhost:8000/restaurants/?vid=99999&locate=San+Francisco,CA&query=pizza"
+            (e.g.) curl -i -H "Accept: application/json" -X GET "http://localhost:8000/restaurants/?locate=San+Jose,CA&query=birthday+party"
 
         Return:
             Result data is following format:
@@ -28,7 +28,6 @@ def restaurants(request):
 
         try:
             # Get Parameter from URL.
-            vid = request.GET['vid']
             query = request.GET['query']
 
             # Get City, State from locate.
@@ -40,7 +39,7 @@ def restaurants(request):
             wt = 'xml'
 
             # Create URL.
-            url = 'http://9platters.com/s'
+            url = 'http://9platters.com/tgrape'
             params = {'q': query, 't': t, 'wt': wt, 'ostate': state, 'ocity': city}
 
             # Get XML from 9platters.
@@ -56,6 +55,12 @@ def restaurants(request):
             context = {'restaurants': objects}
 
             return HttpResponse(wrap_success_json(context), content_type='application/json')
+        
+        except rqeuests.HTTPError as e:
+            context = "Error."
+
+            return HttpResponse(wrap_failure_json(context), content_type='application/json')
+
         except:
             context = "Error."
 

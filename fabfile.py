@@ -1,123 +1,106 @@
-"""Management utilities."""
+# encoding: utf-8
 
+'''
+Created on Aug 26, 2014
 
+@author: Jacob Sungwoon Lee
+'''
+
+from fabric import colors
 from fabric.contrib.console import confirm
-from fabric.api import abort, env, local, settings, task
+from fabric.api import abort, cd, env, local, run, prefix, settings, sudo, task
 
 
 ########## GLOBALS
-env.run = 'heroku run python manage.py'
-HEROKU_ADDONS = (
-    'cloudamqp:lemur',
-    'heroku-postgresql:dev',
-    'scheduler:standard',
-    'memcachier:dev',
-    'newrelic:standard',
-    'pgbackups:auto-month',
-    'sentry:developer',
-)
-HEROKU_CONFIGS = (
-    'DJANGO_SETTINGS_MODULE=consento.settings.prod',
-    'SECRET_KEY=3o@%93r*0lc+0+#zjl)9)cy=0(%hf--1!as!dixxyvfvc=es35',
-    'AWS_ACCESS_KEY_ID=xxx',
-    'AWS_SECRET_ACCESS_KEY=xxx',
-    'AWS_STORAGE_BUCKET_NAME=xxx',
-)
+
+env.roledefs = {
+    'app': ['163.152.163.52:22'],
+}
+env.user = 'dmis'
+env.run = 'python manage.py'
+
+DEFAULT_PORT = 8000
+DEFAULT_DJANGO_SETTINGS_MODULE = 'consento.settings.dev'
+
+SERVER_WORKON_HOME = '/home/dmis/VirtualEnvs'
+SERVER_PROJECT_HOME = '/home/dmis/VirtualEnvs/consento-api/consento-project'
+SERVER_PROJECT_REQ_HOME = SERVER_PROJECT_HOME + '/reqs'
+SERVER_DJANGO_SETTINGS_MODULE = 'consento.settings.prod'
+
+ACTIVATE = 'source %s/consento-api/bin/activate' % SERVER_WORKON_HOME
+
 ########## END GLOBALS
 
 
-########## HELPERS
-def cont(cmd, message):
-    """Given a command, ``cmd``, and a message, ``message``, allow a user to
-    either continue or break execution if errors occur while executing ``cmd``.
+########## SERVERS
 
-    :param str cmd: The command to execute on the local system.
-    :param str message: The message to display to the user on failure.
-
-    .. note::
-        ``message`` should be phrased in the form of a question, as if ``cmd``'s
-        execution fails, we'll ask the user to press 'y' or 'n' to continue or
-        cancel exeuction, respectively.
-
-    Usage::
-
-        cont('heroku run ...', "Couldn't complete %s. Continue anyway?" % cmd)
-    """
-    with settings(warn_only=True):
-        result = local(cmd, capture=True)
-
-    if message and result.failed and not confirm(message):
-        abort('Stopped execution per user request.')
-########## END HELPERS
-
-
-########## DATABASE MANAGEMENT
 @task
-def syncdb():
-    """Run a syncdb."""
-    local('%(run)s syncdb --noinput' % env)
+def app():
+    env.setdefault('django_settings_module', '--settings=%s' % SERVER_DJANGO_SETTINGS_MODULE)
+    env.roles = ['app']
+
+########## END SERVERS
+
+
+########## DEFAULT COMMANDS
+
+@task
+def runserver(port=DEFAULT_PORT, settings=DEFAULT_DJANGO_SETTINGS_MODULE):
+    """
+    Runserver running with Werkzeug debugger.
+    """
+    local('%s runserver_plus 0.0.0.0:%s --settings=%s' % (env.run, port, settings))
 
 
 @task
-def migrate(app=None):
-    """Apply one (or more) migrations. If no app is specified, fabric will
-    attempt to run a site-wide migration.
-
-    :param str app: Django app name to migrate.
+def shell(settings=DEFAULT_DJANGO_SETTINGS_MODULE):
     """
-    if app:
-        local('%s migrate %s --noinput' % (env.run, app))
+    Run Django shell with autoloading of the apps database models.
+    """
+    local('%s shell_plus --settings=%s' % (env.run, settings))
+
+########## END DEFAULT COMMANDS
+
+
+########## GUNICORN MANAGEMENT
+
+@task
+def restart_gunicorn():
+    """
+    Restart the gunicorn process.
+    """
+    print(colors.magenta('======> ' + colors.cyan('Restart gunicorn servers.')))
+    if sudo('supervisorctl restart all', quiet=True).succeeded:
+        print(colors.green('Gunicorn restart is Succeeded.'))
     else:
-        local('%(run)s migrate --noinput' % env)
-########## END DATABASE MANAGEMENT
+        print(colors.red('Gunicorn restart is Failed.'))
+
+########## END GUNICORN
 
 
-########## FILE MANAGEMENT
+########## SERVER MANAGEMENT
+
 @task
-def collectstatic():
-    """Collect all static files, and copy them to S3 for production usage."""
-    local('%(run)s collectstatic --noinput' % env)
-########## END FILE MANAGEMENT
-
-
-########## HEROKU MANAGEMENT
-@task
-def bootstrap():
-    """Bootstrap your new application with Heroku, preparing it for a production
-    deployment. This will:
-
-        - Create a new Heroku application.
-        - Install all ``HEROKU_ADDONS``.
-        - Sync the database.
-        - Apply all database migrations.
-        - Initialize New Relic's monitoring add-on.
+def deploy():
     """
-    cont('heroku create', "Couldn't create the Heroku app, continue anyway?")
-
-    for addon in HEROKU_ADDONS:
-        cont('heroku addons:add %s' % addon,
-            "Couldn't add %s to your Heroku app, continue anyway?" % addon)
-
-    for config in HEROKU_CONFIGS:
-        cont('heroku config:add %s' % config,
-            "Couldn't add %s to your Heroku app, continue anyway?" % config)
-
-    cont('git push heroku master',
-            "Couldn't push your application to Heroku, continue anyway?")
-
-    syncdb()
-    migrate()
-
-    cont('%(run)s newrelic-admin validate-config - stdout' % env,
-            "Couldn't initialize New Relic, continue anyway?")
-
-
-@task
-def destroy():
-    """Destroy this Heroku application. Wipe it from existance.
-
-    .. note::
-        This really will completely destroy your application. Think twice.
+    Deploy to server automatically.
     """
-    local('heroku apps:destroy')
-########## END HEROKU MANAGEMENT
+    if not confirm('Now, deploy to the %s automatically, continue anyway?' % env.host):
+        abort('Aborting at user request.')
+    
+    with cd(SERVER_PROJECT_HOME):
+        print(colors.magenta('======> ' + colors.cyan('Update source code from github.')))
+        run('git stash save', quiet=True)
+        run('git pull origin master')
+
+        with prefix(ACTIVATE):
+            with cd(SERVER_PROJECT_REQ_HOME):
+                print(colors.magenta('======> ' + colors.cyan('Install requirement modules.')))
+                run('pip install -r prod.txt')
+
+            print(colors.magenta('======> ' + colors.cyan('Start collectstatic.')))
+            run('%s collectstatic --noinput --settings=%s' % (env.run, SERVER_DJANGO_SETTINGS_MODULE))
+
+    restart_gunicorn()
+
+########## END SERVER MANAGEMENT

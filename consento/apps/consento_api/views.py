@@ -1,3 +1,11 @@
+# encoding: utf-8
+
+'''
+Created on Aug 26, 2014
+
+@author: Ju Kyung Lee, Jacob Sungwoon Lee
+'''
+
 import json
 import logging
 import requests

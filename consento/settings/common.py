@@ -112,7 +112,7 @@ STATICFILES_FINDERS = (
 
 ########## SECRET CONFIGURATION
 # See: https://docs.djangoproject.com/en/dev/ref/settings/#secret-key
-SECRET_KEY = r"3o@%93r*0lc+0+#zjl)9)cy=0(%hf--1!as!dixxyvfvc=es35"
+SECRET_KEY = "3o@%93r*0lc+0+#zjl)9)cy=0(%hf--1!as!dixxyvfvc=es35"
 ########## END SECRET CONFIGURATION
 
 
@@ -214,6 +214,9 @@ INSTALLED_APPS = DJANGO_APPS + THIRD_PARTY_APPS + LOCAL_APPS
 
 ########## LOGGING CONFIGURATION
 # See: https://docs.djangoproject.com/en/dev/ref/settings/#logging
+
+LOG_DIR = normpath(join(DJANGO_ROOT, 'logs'))
+
 LOGGING = {
     'version': 1,
     'disable_existing_loggers': False,
@@ -231,6 +234,12 @@ LOGGING = {
         'console': {
             'level': 'DEBUG',
             'class': 'logging.StreamHandler'
+        },
+        'api': {
+            'level': 'INFO',
+            'class': 'logging.handlers.TimedRotatingFileHandler',
+            'filename': normpath(join(LOG_DIR, 'api.log')),
+            'when': 'H',
         }
     },
     'loggers': {
@@ -239,6 +248,11 @@ LOGGING = {
             'level': 'ERROR',
             'propagate': True,
         },
+        'api': {
+            'handlers': ['api'],
+            'level': 'INFO',
+            'propagate': True,
+        }
     }
 }
 ########## END LOGGING CONFIGURATION

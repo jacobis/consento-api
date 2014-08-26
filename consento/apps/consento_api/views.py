@@ -1,5 +1,6 @@
-import requests
 import json
+import logging
+import requests
 from bs4 import BeautifulSoup as bs
 
 from django.http import HttpResponse
@@ -7,6 +8,7 @@ from django.views.decorators.csrf import csrf_exempt
 
 from libs.utils.json_wrapper import wrap_success_json, wrap_failure_json
 
+logger = logging.getLogger('api')
 
 @csrf_exempt
 def restaurants(request):
@@ -43,7 +45,8 @@ def restaurants(request):
             params = {'q': query, 't': t, 'wt': wt, 'ostate': state, 'ocity': city}
 
             # Get XML from 9platters.
-            response = requests.get(url, params=params)
+            response = requests.get(url, params=params, timeout=5)
+            logger.info('GET url : %s' % response.url)
 
             # Parse XML.
             response = bs(response.content)
@@ -53,19 +56,19 @@ def restaurants(request):
 
             # Make Context.
             context = {'restaurants': objects}
+            context = wrap_success_json(context)
+            logger.info('Response JSON : %s' % context)
 
             return HttpResponse(wrap_success_json(context), content_type='application/json')
         
-        except rqeuests.HTTPError as e:
-            context = "Error."
-
+        except (rqeuests.HTTPError, requests.HTTPConnectionPool) as e:
+            context = "Error occurred during Connection with 9platters"
             return HttpResponse(wrap_failure_json(context), content_type='application/json')
 
         except:
-            context = "Error."
-
+            context = "Error"
             return HttpResponse(wrap_failure_json(context), content_type='application/json')
 
     else:
-        context = 'Allowed only GET method.'
+        context = 'Allowed only GET method'
         return HttpResponse(wrap_failure_json(context), content_type='application/json')

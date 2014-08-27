@@ -42,13 +42,7 @@ def restaurant_list(request):
 
             # Create URL.
             url = 'http://9platters.com/tgrape'
-            params = {
-                'q': query, 
-                'ostate': locate[1], 
-                'ocity': locate[0],
-                't': 'l', 
-                'wt': 'xml'
-            }
+            params = {'q': query, 'ostate': locate[1], 'ocity': locate[0], 't': 'l', 'wt': 'xml'}
 
             response = requests.get(url, params=params, timeout=5)
             logger.info('GET url : %s' % response.url)
@@ -63,7 +57,7 @@ def restaurant_list(request):
 
             return HttpResponse(context, content_type='application/json')
         
-        except (rqeuests.HTTPError, requests.HTTPConnectionPool) as e:
+        except (requests.HTTPError, requests.HTTPConnectionPool) as e:
             context = "Error occurred during Connection with 9platters"
             return HttpResponse(wrap_failure_json(context), content_type='application/json')
 
@@ -79,10 +73,9 @@ def restaurant_list(request):
 def restaurant_detail(request, restaurant_id):
     
     object_id = 'pObjectID:' + restaurant_id
-    wt = 'xml'
 
     url = 'http://9platters.com/collection1/select'
-    params = {'q': object_id, 'wt': wt, 'indent': 'true'}
+    params = {'q': object_id, 'wt': 'xml'}
 
     response = requests.get(url, params=params, timeout=5)
 

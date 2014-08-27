@@ -36,34 +36,34 @@ def restaurant_list(request):
             {"data": {"restaurants": ["936129", "1305429", "994629", "917229", "1002629", "1045029", "1091329", "1093029", "1099629", "1091829"]}, "success": true}
         '''
 
-        # try:
-        query = request.GET['query']
-        locate = request.GET['locate'].split(',')
+        try:
+            query = request.GET['query']
+            locate = request.GET['locate'].split(',')
 
-        # Create URL.
-        url = 'http://9platters.com/tgrape'
-        params = {'q': query, 'ostate': locate[1], 'ocity': locate[0], 't': 'l', 'wt': 'xml'}
+            # Create URL.
+            url = 'http://9platters.com/tgrape'
+            params = {'q': query, 'ostate': locate[1], 'ocity': locate[0], 't': 'l', 'wt': 'xml'}
 
-        response = requests.get(url, params=params, timeout=5)
-        logger.info('GET url : %s' % response.url)
+            response = requests.get(url, params=params, timeout=5)
+            logger.info('GET url : %s' % response.url)
 
-        response = bs(response.content)
-        objects = response.find_all('object')
-        
-        objects = [obj.get('id') for obj in objects]
+            response = bs(response.content)
+            objects = response.find_all('object')
+            
+            objects = [obj.get('id') for obj in objects]
 
-        context = wrap_success_json({'restaurants': objects})
-        logger.info('Response JSON : %s' % context)
+            context = wrap_success_json({'restaurants': objects})
+            logger.info('Response JSON : %s' % context)
 
-        return HttpResponse(context, content_type='application/json')
+            return HttpResponse(context, content_type='application/json')
         
         # except (requests.HTTPError, requests.HTTPConnectionPool) as e:
         #     context = "Error occurred during Connection with 9platters"
         #     return HttpResponse(wrap_failure_json(context), content_type='application/json')
 
-        # except:
-        #     context = "Error"
-        #     return HttpResponse(wrap_failure_json(context), content_type='application/json')
+        except:
+            context = "Error"
+            return HttpResponse(wrap_failure_json(context), content_type='application/json')
 
     else:
         context = 'Allowed only GET method'

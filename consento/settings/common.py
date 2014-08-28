@@ -221,9 +221,15 @@ LOGGING = {
     'version': 1,
     'disable_existing_loggers': False,
     'filters': {
-    'require_debug_false': {
-        '()': 'django.utils.log.RequireDebugFalse'
+        'require_debug_false': {
+            '()': 'django.utils.log.RequireDebugFalse'
         }
+    },
+    'formatters': {
+        'standard': {
+            'fotmat': "[%(asctime)s] %(message)s",
+            'datefmt': "%Y/%m/%d %H:%M:%S"
+        },
     },
     'handlers': {
         'mail_admins': {
@@ -239,7 +245,8 @@ LOGGING = {
             'level': 'INFO',
             'class': 'logging.handlers.TimedRotatingFileHandler',
             'filename': normpath(join(LOG_DIR, 'api.log')),
-            'when': 'H',
+            'formatter': 'standard',
+            'when': 'h',
         }
     },
     'loggers': {

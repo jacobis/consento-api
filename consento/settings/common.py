@@ -227,7 +227,7 @@ LOGGING = {
     },
     'formatters': {
         'standard': {
-            'fotmat': "[%(asctime)s] %(message)s",
+            'format': "[%(asctime)s] %(message)s",
             'datefmt': "%Y/%m/%d %H:%M:%S"
         },
     },
@@ -246,7 +246,7 @@ LOGGING = {
             'class': 'logging.handlers.TimedRotatingFileHandler',
             'filename': normpath(join(LOG_DIR, 'api.log')),
             'formatter': 'standard',
-            'when': 'h',
+            'when': 'midnight',
         }
     },
     'loggers': {

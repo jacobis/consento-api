@@ -46,6 +46,7 @@ def restaurant_list(request):
 
             response = requests.get(url, params=params, timeout=5)
             logger.info('GET url : %s' % response.url)
+            response.raise_for_status()
 
             response = bs(response.content)
             objects = response.find_all('object')
@@ -55,19 +56,19 @@ def restaurant_list(request):
             context = wrap_success_json({'restaurants': objects})
             logger.info('Response JSON : %s' % context)
 
-            return HttpResponse(context, content_type='application/json')
+            return HttpResponse(context, status=200, content_type='application/json')
         
-        # except (requests.HTTPError, requests.HTTPConnectionPool) as e:
-        #     context = "Error occurred during Connection with 9platters"
-        #     return HttpResponse(wrap_failure_json(context), content_type='application/json')
+        except (requests.exceptions.HTTPError, requests.exceptions.HTTPConnectionPool) as e:
+            context = "Error occurred during Connection with 9platters"
+            return HttpResponse(wrap_failure_json(context), status=500, content_type='application/json')
 
         except:
-            context = "Error"
-            return HttpResponse(wrap_failure_json(context), content_type='application/json')
+            context = "Exception Error"
+            return HttpResponse(wrap_failure_json(context), status=500, content_type='application/json')
 
     else:
         context = 'Allowed only GET method'
-        return HttpResponse(wrap_failure_json(context), content_type='application/json')
+        return HttpResponse(wrap_failure_json(context), status=400, content_type='application/json')
 
 
 def restaurant_detail(request, restaurant_id):

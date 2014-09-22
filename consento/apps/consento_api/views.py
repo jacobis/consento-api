@@ -19,10 +19,10 @@ from libs.utils.json_wrapper import wrap_success_json, wrap_failure_json
 logger = logging.getLogger('api')
 
 @csrf_exempt
-def restaurant_list(request):
+def venue_search(request):
     if request.method == 'GET':
         '''
-        Return restaurant list ordered by consento rank-base.
+        Return venue list ordered by consento rank-base.
 
         Args:
             vid: vender id (*)
@@ -68,12 +68,12 @@ def restaurant_list(request):
 
     else:
         context = 'Allowed only GET method'
-        return HttpResponse(wrap_failure_json(context), status=400, content_type='application/json')
+        return HttpResponse(wrap_failure_json(context), status=405, content_type='application/json')
 
 
-def restaurant_detail(request, restaurant_id):
+def venue_detail(request, venue_id):
     
-    object_id = 'pObjectID:' + restaurant_id
+    object_id = 'pObjectID:' + venue_id
 
     url = 'http://9platters.com/collection1/select'
     params = {'q': object_id, 'wt': 'xml'}

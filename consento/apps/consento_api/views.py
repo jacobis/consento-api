@@ -30,7 +30,7 @@ def venue_search(request):
             location: city, state (*)
             query: any query (*)
 
-            (e.g.) curl -i -H "Accept: application/json" -X GET "http://localhost:8000/v1/venues/search/?locate=San+Jose,CA&query=birthday+party"
+            (e.g.) curl -i -H "Accept: application/json" -X GET "http://localhost:8000/v1/venues/search/?location=San+Jose,CA&query=birthday+party"
 
         Return:
             Result data is following format:

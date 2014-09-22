@@ -18,7 +18,7 @@ def wrap_success_json(result):
         String JSON dump of result data wrapped in the following format:
             {"success": True, "data": <result>}
     """
-    json_message = {'success': True, 'data': result}
+    json_message = {'data': result}
     return json.dumps(json_message)
 
 def wrap_failure_json(reason, result=None):
@@ -33,7 +33,7 @@ def wrap_failure_json(reason, result=None):
         String JSON dump of result data wrapped in the following format:
             {"success": False, "reason": <reason>}
     """
-    json_message = {'success': False, 'reason': reason}
+    json_message = {'reason': reason}
     if result:
         json_message.update({'result': result})
     return json.dumps(json_message)

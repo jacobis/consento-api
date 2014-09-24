@@ -6,6 +6,7 @@ Created on Aug 26, 2014
 @author: Ju Kyung Lee, Jacob Sungwoon Lee
 '''
 
+import re
 import json
 import logging
 import requests
@@ -54,7 +55,6 @@ def venue_search(request):
             venue_list = []
 
             for obj in objects:
-                print obj
                 try:
                     storecd = obj.find('str', {'name': 'STORECD'}).text
                 except:
@@ -117,9 +117,14 @@ def venue_detail(request, venue_id):
         positive = find_by_name(ontology, 'int', 'pos')
         negative = find_by_name(ontology, 'int', 'neg')
         overall = {'positive': positive, 'negative': negative}
-        
-        # rank = find_by_name(doc, 'str', 'pName')
-        # keyword = find_by_name(doc, 'str', 'pName')
+
+        top_phrase_offline = find_by_name(ontology, 'str', 'topPhraseOffline')
+        keyword_list = re.split('\t|/', top_phrase_offline)[::2]
+        keyword = {}
+        i = 0
+        for k in keyword_list:
+            keyword[k] = len(keyword_list) - i
+            i = i + 1
 
         other_times = find_by_name(ontology, 'str', 'othersTimes')
         other_times = other_times.replace(',];', ']')
@@ -162,7 +167,7 @@ def venue_detail(request, venue_id):
         neg = combo_buttons.get('View').get('neg')
         view = {'positive': pos, 'negative': neg}
 
-        venue = {'meta': meta, 'doc_count': doc_count, 'overall': overall, 'meal_type': meal_type, 'dietary': dietary, 'venue_preference': venue_preference, 'family': family, 'view': view}
+        venue = {'meta': meta, 'doc_count': doc_count, 'overall': overall, 'keyword': keyword, 'meal_type': meal_type, 'dietary': dietary, 'venue_preference': venue_preference, 'family': family, 'view': view}
 
         context = wrap_success_json(venue)
 

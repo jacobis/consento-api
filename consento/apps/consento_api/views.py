@@ -58,7 +58,7 @@ def venue_search(request):
                 name = find_by_name(obj, 'str', 'pName')
                 address = find_by_name(obj, 'str', 'oaddr')
                 location = find_by_name(obj, 'str', 'latlong')
-                category = ''
+                category = find_by_name(obj, 'str', 'pYelpCategory')
                 try:
                     storecd = find_by_name(obj, 'str', 'STORECD')
                 except:

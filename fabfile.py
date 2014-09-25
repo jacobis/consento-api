@@ -16,14 +16,14 @@ from fabric.api import abort, cd, env, local, run, prefix, settings, sudo, task
 env.roledefs = {
     'app': ['54.183.205.145:22'],
 }
-env.user = 'dmis'
+env.user = 'ubuntu'
 env.run = 'python manage.py'
 
 DEFAULT_PORT = 8000
 DEFAULT_DJANGO_SETTINGS_MODULE = 'consento.settings.dev'
 
-SERVER_WORKON_HOME = '/home/dmis/VirtualEnvs'
-SERVER_PROJECT_HOME = '/home/dmis/VirtualEnvs/consento-api/consento-project'
+SERVER_WORKON_HOME = '/home/ubuntu/VirtualEnvs'
+SERVER_PROJECT_HOME = '/home/ubuntu/VirtualEnvs/consento-api/consento-project'
 SERVER_PROJECT_REQ_HOME = SERVER_PROJECT_HOME + '/reqs'
 SERVER_DJANGO_SETTINGS_MODULE = 'consento.settings.prod'
 
@@ -38,6 +38,7 @@ ACTIVATE = 'source %s/consento-api/bin/activate' % SERVER_WORKON_HOME
 def app():
     env.setdefault('django_settings_module', '--settings=%s' % SERVER_DJANGO_SETTINGS_MODULE)
     env.roles = ['app']
+    env.key_filename = '/Users/jacob/Dropbox/dmislab1.pem'
 
 ########## END SERVERS
 

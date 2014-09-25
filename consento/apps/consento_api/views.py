@@ -55,13 +55,21 @@ def venue_search(request):
             venue_list = []
 
             for obj in objects:
+                name = find_by_name(obj, 'str', 'pName')
+                address = find_by_name(obj, 'str', 'oaddr')
+                location = find_by_name(obj, 'str', 'latlong')
+                category = ''
                 try:
-                    storecd = obj.find('str', {'name': 'STORECD'}).text
+                    storecd = find_by_name(obj, 'str', 'STORECD')
                 except:
                     storecd = ''
                 object_id = obj.get('id')
                 doc_count = obj.get('numreviews')
                 venue = {
+                    'name': name,
+                    'address': address,
+                    'location': location,
+                    'category': category,
                     'storecd': storecd,
                     'object_id': object_id, 
                     'doc_count': doc_count

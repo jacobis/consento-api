@@ -99,7 +99,7 @@ def venue_detail(request, venue_id):
     try:
         object_id = 'oid:' + venue_id
 
-        url = 'http://9platters.com/tgrape'
+        url = 'http://9platters.com/s'
         params = {'q': object_id, 't': 'd', 'wt': 'xml'}
 
         response = requests.get(url, params=params, timeout=5)

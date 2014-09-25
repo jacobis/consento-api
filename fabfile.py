@@ -14,7 +14,7 @@ from fabric.api import abort, cd, env, local, run, prefix, settings, sudo, task
 ########## GLOBALS
 
 env.roledefs = {
-    'app': ['163.152.163.52:22'],
+    'app': ['54.183.205.145:22'],
 }
 env.user = 'dmis'
 env.run = 'python manage.py'

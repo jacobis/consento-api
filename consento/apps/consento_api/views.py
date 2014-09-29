@@ -81,12 +81,13 @@ def venue_search(request):
 
             return HttpResponse(context, status=200, content_type='application/json')
     
-        except requests.exceptions.HTTPError as e:
+        except requests.exceptions.Timeout as e:
             context = "Error occurred during Connection with 9platters"
             return HttpResponse(wrap_failure_json(context), status=500, content_type='application/json')
 
-        except:
+        except Exception as e:
             context = "Exception Error"
+            logger.info('Error : %s' % e)
             return HttpResponse(wrap_failure_json(context), status=500, content_type='application/json')
 
     else:
@@ -173,26 +174,13 @@ def venue_detail(request, venue_id):
 
         context = wrap_success_json(venue)
 
-        # vegan = find_by_name(doc, 'str', 'pName')
-        # vegetarian = find_by_name(doc, 'str', 'pName')
-        # gluten_free = find_by_name(doc, 'str', 'pName')
-
-        # wait = find_by_name(doc, 'str', 'pName')
-        # noise = find_by_name(doc, 'str', 'pName')
-
-        # positive = find_by_name(doc, 'str', 'pName')
-        # negative = find_by_name(doc, 'str', 'pName')
-
-        # positive = find_by_name(doc, 'str', 'pName')
-        # negative = find_by_name(doc, 'str', 'pName')       
-        
-
         return HttpResponse(context, status=200, content_type='application/json')
 
-    except requests.exceptions.HTTPError as e:
+    except requests.exceptions.Timeout as e:
         context = "Error occurred during Connection with 9platters"
         return HttpResponse(wrap_failure_json(context), status=500, content_type='application/json')
 
-    except:
+    except Exception as e:
         context = "Exception Error"
+        logger.info('Error : %s' % e)
         return HttpResponse(wrap_failure_json(context), status=500, content_type='application/json')

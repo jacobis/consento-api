@@ -165,17 +165,11 @@ def venue_detail(request, venue_id):
         dietary = {'vegetarian': vegetarian}
 
         wait = combo_buttons.get('Waiting').get('frequency')
-        venue_preference = {'wait': wait}
+        family = combo_buttons.get('Kid').get('frequency')
+        view = combo_buttons.get('View').get('frequency')
+        venue_preference = {'wait': wait, 'family': family, 'view': view}
 
-        pos = combo_buttons.get('Kid').get('pos')
-        neg = combo_buttons.get('Kid').get('neg')
-        family = {'positive': pos, 'negative': neg}
-
-        pos = combo_buttons.get('View').get('pos')
-        neg = combo_buttons.get('View').get('neg')
-        view = {'positive': pos, 'negative': neg}
-
-        venue = {'meta': meta, 'doc_count': doc_count, 'overall': overall, 'keyword': keyword, 'meal_type': meal_type, 'dietary': dietary, 'venue_preference': venue_preference, 'family': family, 'view': view}
+        venue = {'meta': meta, 'doc_count': doc_count, 'overall': overall, 'keyword': keyword, 'meal_type': meal_type, 'dietary': dietary, 'venue_preference': venue_preference}
 
         context = wrap_success_json(venue)
 

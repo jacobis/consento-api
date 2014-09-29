@@ -65,7 +65,6 @@ def venue_search(request):
 
         except Exception as e:
             context = "Exception Error"
-            print e
             logger.info('Error : %s' % e)
             return HttpResponse(wrap_failure_json(context), status=500, content_type='application/json')
 

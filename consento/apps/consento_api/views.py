@@ -39,11 +39,11 @@ def venue_search(request):
         '''
 
         try:
-            and_query = request.GET['query']
-            or_query = ''
+            and_query = ''
             for query in request.GET['query'].split(' '):
-                or_query += '+(%s) ' % query
+                and_query += '+(%s) ' % query
             location = request.GET['location'].split(',')
+            or_query = request.GET['query']
 
             url = 'http://9platters.com/tgrape'
             params = {'q': and_query, 'ostate': location[1], 'ocity': location[0], 't': 'l', 'wt': 'xml'}

@@ -39,44 +39,22 @@ def venue_search(request):
         '''
 
         try:
-            query = request.GET['query']
+            and_query = request.GET['query']
+            or_query = ''
+            for query in request.GET['query'].split(' '):
+                or_query += '+(%s) ' % query
             location = request.GET['location'].split(',')
 
             url = 'http://9platters.com/tgrape'
-            params = {'q': query, 'ostate': location[1], 'ocity': location[0], 't': 'l', 'wt': 'xml'}
+            params = {'q': and_query, 'ostate': location[1], 'ocity': location[0], 't': 'l', 'wt': 'xml'}
+            and_result = venue_search_request(url, params)
 
-            response = requests.get(url, params=params, timeout=5)
-            logger.info('GET url : %s' % response.url)
-            response.raise_for_status()
+            params = {'q': or_query, 'ostate': location[1], 'ocity': location[0], 't': 'l', 'wt': 'xml'}
+            or_result = venue_search_request(url, params)
 
-            response = bs(response.content)
-            objects = response.find_all('object')
+            venue_list = {'and_result': and_result, 'or_result': or_result}
 
-            venue_list = []
-
-            for obj in objects:
-                name = find_by_name(obj, 'str', 'pName')
-                address = find_by_name(obj, 'str', 'oaddr')
-                location = find_by_name(obj, 'str', 'latlong')
-                category = find_by_name(obj, 'str', 'pYelpCategory')
-                try:
-                    storecd = find_by_name(obj, 'str', 'STORECD')
-                except:
-                    storecd = ''
-                object_id = obj.get('id')
-                doc_count = obj.get('numreviews')
-                venue = {
-                    'name': name,
-                    'address': address,
-                    'location': location,
-                    'category': category,
-                    'storecd': storecd,
-                    'object_id': object_id, 
-                    'doc_count': doc_count
-                }
-                venue_list.append(venue)
-
-            context = wrap_success_json({'venues': venue_list})
+            context = wrap_success_json(venue_list)
             logger.info('Response JSON : %s' % context)
 
             return HttpResponse(context, status=200, content_type='application/json')
@@ -87,12 +65,49 @@ def venue_search(request):
 
         except Exception as e:
             context = "Exception Error"
+            print e
             logger.info('Error : %s' % e)
             return HttpResponse(wrap_failure_json(context), status=500, content_type='application/json')
 
     else:
         context = 'Allowed only GET method'
         return HttpResponse(wrap_failure_json(context), status=405, content_type='application/json')
+
+
+def venue_search_request(url, params):
+
+    response = requests.get(url, params=params, timeout=5)
+    logger.info('GET url : %s' % response.url)
+    response.raise_for_status()
+
+    response = bs(response.content)
+    objects = response.find_all('object')
+
+    venue_list = []
+
+    for obj in objects:
+        name = find_by_name(obj, 'str', 'pName')
+        address = find_by_name(obj, 'str', 'oaddr')
+        location = find_by_name(obj, 'str', 'latlong')
+        category = find_by_name(obj, 'str', 'pYelpCategory')
+        try:
+            storecd = find_by_name(obj, 'str', 'STORECD')
+        except:
+            storecd = ''
+        object_id = obj.get('id')
+        doc_count = obj.get('numreviews')
+        venue = {
+            'name': name,
+            'address': address,
+            'location': location,
+            'category': category,
+            'storecd': storecd,
+            'object_id': object_id, 
+            'doc_count': doc_count
+        }
+        venue_list.append(venue)
+        
+    return venue_list
 
 
 def venue_detail(request, venue_id):

@@ -28,28 +28,42 @@ def venue_search(request):
 
         Args:
             vid: vender id (*)
-            location: city, state (*)
+            location: latitude, longitude, city, state (* city, state optional)
             query: any query (*)
 
-            (e.g.) curl -i -H "Accept: application/json" -X GET "http://localhost:8000/v1/venues/search/?location=San+Jose,CA&query=birthday+party"
+            (e.g.) curl -i -H "Accept: application/json" -X GET "http://localhost:8000/v1/venues/search?location=San+Jose,CA&query=birthday+party"
 
         Return:
             Result data is following format:
-            {"data": {"restaurants": ["936129", "1305429", "994629", "917229", "1002629", "1045029", "1091329", "1093029", "1099629", "1091829"]}, "success": true}
+            {"data": 
+                {"and_result": [{"category": "Restaurants", "name": "Maggiano\u2019s Little Italy", "object_id": "8273929", "doc_count": "50", "storecd": "2876", "address": "3055 Olin Ave San Jose, CA 95128", "location": "37.3208463,-121.9496176"}], 
+                "or_result": [{"category": "Restaurants", "name": "Maggiano\u2019s Little Italy", "object_id": "8273929", "doc_count": "483", "storecd": "2876", "address": "3055 Olin Ave San Jose, CA 95128", "location": "37.3208463,-121.9496176"}]
+                }
+            }
         '''
 
         try:
             and_query = ''
             for query in request.GET['query'].split(' '):
                 and_query += '+(%s) ' % query
-            location = request.GET['location'].split(',')
             or_query = request.GET['query']
+            location = request.GET['location'].split(',')
+
+            latitude = float(location[0])
+            longitude = float(location[1])
 
             url = 'http://9platters.com/tgrape'
-            params = {'q': and_query, 'ostate': location[1], 'ocity': location[0], 't': 'l', 'wt': 'xml'}
+            params = {'q': and_query, 'latitude': latitude, 'longitude': longitude, 't': 'l', 'wt': 'xml'}
+
+            if len(location) > 2:
+                city = location[2]
+                state = location[3]
+                params['ocity'] = city
+                params['ostate'] = state
+
             and_result = venue_search_request(url, params)
 
-            params = {'q': or_query, 'ostate': location[1], 'ocity': location[0], 't': 'l', 'wt': 'xml'}
+            params['q'] = or_query
             or_result = venue_search_request(url, params)
 
             venue_list = {'and_result': and_result, 'or_result': or_result}
@@ -94,6 +108,7 @@ def venue_search_request(url, params):
         except:
             storecd = ''
         object_id = obj.get('id')
+        total_count = find_by_name(obj, 'int', 'pTotalComments')
         doc_count = obj.get('numreviews')
         venue = {
             'name': name,
@@ -101,7 +116,8 @@ def venue_search_request(url, params):
             'location': location,
             'category': category,
             'storecd': storecd,
-            'object_id': object_id, 
+            'object_id': object_id,
+            'total_count': total_count,
             'doc_count': doc_count
         }
         venue_list.append(venue)

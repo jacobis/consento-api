@@ -29,9 +29,9 @@ def venue_search(request):
         Args:
             vid: vender id (*)
             location: latitude, longitude, city, state (* city, state optional)
-            query: any query (*)
+            query: any query
 
-            (e.g.) curl -i -H "Accept: application/json" -X GET "http://localhost:8000/v1/venues/search?location=San+Jose,CA&query=birthday+party"
+            (e.g.) curl -i -H "Accept: application/json" -X GET "http://localhost:8000/v1/venues/search?location=San+Jose ,CA&query=birthday+party"
 
         Return:
             Result data is following format:
@@ -43,30 +43,35 @@ def venue_search(request):
         '''
 
         try:
-            and_query = ''
-            for query in request.GET['query'].split(' '):
-                and_query += '+(%s) ' % query
-            or_query = request.GET['query']
             location = request.GET['location'].split(',')
 
             latitude = float(location[0])
             longitude = float(location[1])
 
             url = 'http://9platters.com/tgrape'
-            params = {'q': and_query, 'latitude': latitude, 'longitude': longitude, 't': 'l', 'wt': 'xml'}
+            params = {'latitude': latitude, 'longitude': longitude, 'sr': '4.02336', 't': 'l', 'dr': '24', 'wt': 'xml'}
 
+            # city, state가 존재할 경우
             if len(location) > 2:
-                city = location[2]
-                state = location[3]
-                params['ocity'] = city
-                params['ostate'] = state
+                params['ocity'] = location[2]
+                params['ostate'] = location[3]
 
-            and_result = venue_search_request(url, params)
+            # query가 존재할 경우
+            try:
+                original_queries = request.GET['query']
+                params['q'] = original_queries
+                or_result = venue_search_request(url, params)
+                
+                queries = ''
+                for query in original_queries.split(' '):
+                    queries += '+(%s) ' % query
+                params['q'] = queries
+                and_result = venue_search_request(url, params)
 
-            params['q'] = or_query
-            or_result = venue_search_request(url, params)
+                venue_list = {'and_result': and_result, 'or_result': or_result}
 
-            venue_list = {'and_result': and_result, 'or_result': or_result}
+            except:
+                venue_list = venue_search_request(url, params)
 
             context = wrap_success_json(venue_list)
             logger.info('Response JSON : %s' % context)

@@ -49,7 +49,7 @@ def venue_search(request):
             longitude = float(location[1])
 
             url = 'http://9platters.com/tgrape'
-            params = {'latitude': latitude, 'longitude': longitude, 'sr': '4.02336', 't': 'l', 'dr': '24', 'wt': 'xml'}
+            params = {'lat': latitude, 'lng': longitude, 'sr': '4.02336', 't': 'l', 'dr': '24', 'wt': 'xml'}
 
             # city, state가 존재할 경우
             if len(location) > 2:

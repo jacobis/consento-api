@@ -161,7 +161,7 @@ def venue_detail(request, venue_id):
         yelp_id = find_by_name(meta, 'str', 'id')
         location = find_by_name(meta, 'str', 'pLatLong')
         
-        total_doc = find_by_name(meta, 'int', 'pReviews')
+        total_doc = response.find('result', {'name': 'response'}).get('numsegs')
 
         meta = {'name': name, 'category': category, 'address': address, 'phone_number': phone_number, 'yelp_id': yelp_id, 'location': location}
         doc_count = {'total_doc': total_doc}

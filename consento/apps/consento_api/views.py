@@ -43,18 +43,27 @@ def venue_search(request):
         '''
 
         try:
-            location = request.GET['location'].split(',')
-
-            latitude = float(location[0])
-            longitude = float(location[1])
-
             url = 'http://9platters.com/tgrape'
-            params = {'lat': latitude, 'lng': longitude, 'sr': '4.02336', 't': 'l', 'dr': '24', 'wt': 'xml'}
+            params = {'t': 'l', 'dr': '24', 'wt': 'xml'}
 
-            # city, state가 존재할 경우
-            if len(location) > 2:
-                params['ocity'] = location[2]
-                params['ostate'] = location[3]
+            try:
+                latlng = request.GET['latlng'].split(',')
+            except:
+                latlng = None
+
+            try:
+                location = request.GET['location'].split(',')
+            except:
+                location = None
+
+            if latlng:
+                params['lat'] = float(latlng[0])
+                params['lng'] = float(latlng[1])
+                params['sr'] = float(4.02336)
+
+            if location:
+                params['ocity'] = location[0]
+                params['ostate'] = location[1]
 
             # query가 존재할 경우
             try:

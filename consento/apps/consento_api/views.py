@@ -216,16 +216,16 @@ def venue_detail(request, venue_id):
             neg = datum.get('neg')
             combo_buttons[name] = {'frequency': frequency, 'pos': pos, 'neg': neg}
 
-        glueten_free = combo_buttons.get('Gluten Free').get('frequency')
+        gluten_free = combo_buttons.get('Gluten Free').get('frequency')
         vegan = combo_buttons.get('Vegan').get('frequency')
         vegetarian = combo_buttons.get('Vegetarian').get('frequency')
-        dietary = {'glueten_free': glueten_free, 'vegan': vegan, 'vegetarian': vegetarian}
+        dietary = {'gluten_free': gluten_free, 'vegan': vegan, 'vegetarian': vegetarian}
 
         family = combo_buttons.get('Family').get('frequency')
         noise = combo_buttons.get('Noise').get('frequency')
         view = combo_buttons.get('View').get('frequency')
         wait = combo_buttons.get('Waiting').get('frequency')
-        venue_preference = {'wait': wait, 'family': family, 'view': view}
+        venue_preference = {'family': family, 'noise': noise, 'view': view, 'wait': wait}
 
         venue = {'meta': meta, 'doc_count': doc_count, 'overall': overall, 'keyword': keyword, 'meal_type': meal_type, 'dietary': dietary, 'venue_preference': venue_preference}
 

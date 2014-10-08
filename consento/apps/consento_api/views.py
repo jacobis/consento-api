@@ -28,10 +28,16 @@ def venue_search(request):
 
         Args:
             vid: vender id (*)
-            location: latitude, longitude, city, state (* city, state optional)
+            location: city, state (* Need location or latlng)
+            latlng: latitude, longitude (* Need location or latlng)
             query: any query
 
-            (e.g.) curl -i -H "Accept: application/json" -X GET "http://localhost:8000/v1/venues/search?location=San+Jose ,CA&query=birthday+party"
+            (e.g.) 
+            with Location :
+                curl -i -H "Accept: application/json" -X GET "http://localhost:8000/v1/venues/search?location=San+Jose,CA&query=pizza"
+
+            with Coordinate :
+                curl -i -H "Accept: application/json" -X GET "http://localhost:8000/v1/venues/search?latlng=37.76625,-122.42212&query=pizza"
 
         Return:
             Result data is following format:
@@ -65,7 +71,6 @@ def venue_search(request):
                 params['ocity'] = location[0]
                 params['ostate'] = location[1]
 
-            # query가 존재할 경우
             try:
                 original_queries = request.GET['query']
                 params['q'] = original_queries
@@ -152,25 +157,28 @@ def venue_detail(request, venue_id):
         response.raise_for_status()
 
         response = bs(response.content)
-        meta = response.find('doc', {'name': 'ObjectMeta'})
 
+        # Meta
+        meta = response.find('doc', {'name': 'ObjectMeta'})
         name = find_by_name(meta, 'str', 'pName')
         category = find_by_name(meta, 'str', 'pYelpCategory')
         address = find_by_name(meta, 'str', 'pAddress')
         phone_number = find_by_name(meta, 'str', 'pPhoneNumber')
         yelp_id = find_by_name(meta, 'str', 'id')
         location = find_by_name(meta, 'str', 'pLatLong')
-        
-        total_doc = response.find('result', {'name': 'response'}).get('numsegs')
-
         meta = {'name': name, 'category': category, 'address': address, 'phone_number': phone_number, 'yelp_id': yelp_id, 'location': location}
+
+        # Doc Count
+        total_doc = response.find('result', {'name': 'response'}).get('numsegs')
         doc_count = {'total_doc': total_doc}
         
+        # Overall
         ontology = response.find('doc', {'name': 'Ontology'})
         positive = find_by_name(ontology, 'int', 'pos')
         negative = find_by_name(ontology, 'int', 'neg')
         overall = {'positive': positive, 'negative': negative}
 
+        # Keyword
         top_phrase_offline = find_by_name(ontology, 'str', 'topPhraseOffline')
         keyword_list = re.split('\t|/', top_phrase_offline)[::2]
         keyword = {}
@@ -179,6 +187,7 @@ def venue_detail(request, venue_id):
             keyword[k] = len(keyword_list) - i
             i = i + 1
 
+        # Meal Type
         other_times = find_by_name(ontology, 'str', 'othersTimes')
         other_times = other_times.replace(',];', ']')
         exec(other_times)
@@ -195,6 +204,7 @@ def venue_detail(request, venue_id):
         dessert = other_times.get('Dessert')
         meal_type = {'breakfast': breakfast, 'brunch': brunch, 'lunch': lunch, 'dinner': dinner, 'dessert': dessert}
 
+        # Dietary & Venue Preference
         combo_buttons = find_by_name(ontology, 'str', 'ComboButtons')
         combo_buttons = combo_buttons.replace(',];', ']')
         exec(combo_buttons)
@@ -206,12 +216,15 @@ def venue_detail(request, venue_id):
             neg = datum.get('neg')
             combo_buttons[name] = {'frequency': frequency, 'pos': pos, 'neg': neg}
 
+        glueten_free = combo_buttons.get('Gluten Free').get('frequency')
+        vegan = combo_buttons.get('Vegan').get('frequency')
         vegetarian = combo_buttons.get('Vegetarian').get('frequency')
-        dietary = {'vegetarian': vegetarian}
+        dietary = {'glueten_free': glueten_free, 'vegan': vegan, 'vegetarian': vegetarian}
 
-        wait = combo_buttons.get('Waiting').get('frequency')
-        family = combo_buttons.get('Kid').get('frequency')
+        family = combo_buttons.get('Family').get('frequency')
+        noise = combo_buttons.get('Noise').get('frequency')
         view = combo_buttons.get('View').get('frequency')
+        wait = combo_buttons.get('Waiting').get('frequency')
         venue_preference = {'wait': wait, 'family': family, 'view': view}
 
         venue = {'meta': meta, 'doc_count': doc_count, 'overall': overall, 'keyword': keyword, 'meal_type': meal_type, 'dietary': dietary, 'venue_preference': venue_preference}

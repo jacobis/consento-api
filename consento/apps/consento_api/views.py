@@ -127,7 +127,7 @@ def venue_search_request(url, params):
         except:
             storecd = ''
         object_id = obj.get('id')
-        total_count = find_by_name(obj, 'int', 'pTotalComments')
+        total_count = find_by_name(obj, 'str', 'pTotalComments')
         doc_count = obj.get('numreviews')
         venue = {
             'name': name,

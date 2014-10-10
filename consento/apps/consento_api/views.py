@@ -165,8 +165,10 @@ def venue_detail(request, venue_id):
         address = find_by_name(meta, 'str', 'pAddress')
         phone_number = find_by_name(meta, 'str', 'pPhoneNumber')
         yelp_id = find_by_name(meta, 'str', 'id')
+        yelp_url = find_by_name(meta, 'str', 'pYelpBiz')
+        yelp_url = 'http://www.yelp.com/biz/' + yelp_url if yelp_url else None
         location = find_by_name(meta, 'str', 'pLatLong')
-        meta = {'name': name, 'category': category, 'address': address, 'phone_number': phone_number, 'yelp_id': yelp_id, 'location': location}
+        meta = {'name': name, 'category': category, 'address': address, 'phone_number': phone_number, 'yelp_id': yelp_id, 'yelp_url': yelp_url, 'location': location}
 
         # Doc Count
         total_doc = response.find('result', {'name': 'response'}).get('numsegs')

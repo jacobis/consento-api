@@ -118,6 +118,8 @@ def venue_search_request(url, params):
     venue_list = []
 
     for obj in objects:
+        num_found = int(obj.get('numfound'))
+        if num_found == 1: continue
         name = find_by_name(obj, 'str', 'pName')
         address = find_by_name(obj, 'str', 'oaddr')
         location = find_by_name(obj, 'str', 'latlong')

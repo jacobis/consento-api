@@ -73,7 +73,7 @@ def venue_search(request):
 
             try:
                 queries_list = request.GET['query'].split(' ')
-                if len(queries_list) == 2:
+                if len(queries_list) >= 2:
                     params['q'] = ' '.join(queries_list)
                     or_result = venue_search_request(url, params)
 

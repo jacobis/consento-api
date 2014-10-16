@@ -63,9 +63,20 @@ def venue_search(request):
                 location = None
 
             if latlng:
-                params['lat'] = float(latlng[0])
-                params['lng'] = float(latlng[1])
-                params['sr'] = float(4.02336)
+                latlng = [float(i) for i in latlng]
+                if len(latlng) == 4:
+                    if latlng[0] > latlng[2]:
+                        latlng[0], latlng[2] = latlng[2], latlng[0]
+                    if latlng[1] > latlng[3]:
+                        latlng[1], latlng[3] = latlng[3], latlng[1]
+                    params['latmin'] = latlng[0]
+                    params['lngmin'] = latlng[1]
+                    params['latmax'] = latlng[2]
+                    params['lngmax'] = latlng[3]
+                else:
+                    params['lat'] = latlng[0]
+                    params['lng'] = latlng[1]
+                    params['sr'] = float(4.02336)
 
             if location:
                 params['ocity'] = location[0]

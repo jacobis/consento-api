@@ -83,19 +83,31 @@ def venue_search(request):
                 params['ostate'] = location[1]
 
             try:
-                queries_list = request.GET['query'].split(' ')
-                if len(queries_list) >= 2:
-                    params['q'] = ' '.join(queries_list)
-                    or_result = venue_search_request(url, params)
+                original_queries = request.GET['query']
+                params['q'] = original_queries
+                or_result = venue_search_request(url, params)
+                
+                queries = ''
+                for query in original_queries.split(' '):
+                    queries += '+(%s) ' % query
+                params['q'] = queries
+                and_result = venue_search_request(url, params)
 
-                    queries = ''.join('+(' + query + ')' for query in queries_list)
-                    params['q'] = queries
-                    and_result = venue_search_request(url, params)
+                venue_list = {'and_result': and_result, 'or_result': or_result}
 
-                    venue_list = {'and_result': and_result, 'or_result': or_result}
-                else:
-                    params['q'] = ' '.join(queries_list)
-                    venue_list = venue_search_request(url, params)
+                # queries_list = request.GET['query'].split(' ')
+                # if len(queries_list) >= 2:
+                #     params['q'] = ' '.join(queries_list)
+                #     or_result = venue_search_request(url, params)
+
+                #     queries = ''.join('+(' + query + ')' for query in queries_list)
+                #     params['q'] = queries
+                #     and_result = venue_search_request(url, params)
+
+                #     venue_list = {'and_result': and_result, 'or_result': or_result}
+                # else:
+                #     params['q'] = ' '.join(queries_list)
+                #     venue_list = venue_search_request(url, params)
 
             except:
                 venue_list = venue_search_request(url, params)
@@ -142,7 +154,7 @@ def venue_search_request(url, params):
         except:
             storecd = ''
         object_id = obj.get('id')
-        total_count = find_by_name(obj, 'str', 'pTotalComments')
+        total_count = find_by_name(obj, 'int', 'pTotalComments')
         doc_count = obj.get('numreviews')
         venue = {
             'name': name,

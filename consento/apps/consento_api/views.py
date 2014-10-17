@@ -15,8 +15,9 @@ from bs4 import BeautifulSoup as bs
 from django.http import HttpResponse
 from django.views.decorators.csrf import csrf_exempt
 
-from libs.utils.json_wrapper import wrap_success_json, wrap_failure_json
 from libs.utils.beautifulsoup_wrapper import find_by_name
+from libs.utils.coordinate import coordinate_swapper
+from libs.utils.json_wrapper import wrap_success_json, wrap_failure_json
 
 logger = logging.getLogger('api')
 
@@ -63,12 +64,9 @@ def venue_search(request):
                 location = None
 
             if latlng:
-                latlng = [float(i) for i in latlng]
+                latlng = coordinate_swapper(latlng)
+
                 if len(latlng) == 4:
-                    if latlng[0] > latlng[2]:
-                        latlng[0], latlng[2] = latlng[2], latlng[0]
-                    if latlng[1] > latlng[3]:
-                        latlng[1], latlng[3] = latlng[3], latlng[1]
                     params['latmin'] = latlng[0]
                     params['lngmin'] = latlng[1]
                     params['latmax'] = latlng[2]

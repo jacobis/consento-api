@@ -141,8 +141,8 @@ def venue_search_request(url, params):
     venue_list = []
 
     for obj in objects:
-        num_found = int(obj.get('numfound'))
-        if num_found == 1: continue
+        doc_count = int(obj.get('numfound'))
+        if doc_count == 1: continue
         name = find_by_name(obj, 'str', 'pName')
         address = find_by_name(obj, 'str', 'oaddr')
         location = find_by_name(obj, 'str', 'latlong')
@@ -153,7 +153,6 @@ def venue_search_request(url, params):
             storecd = ''
         object_id = obj.get('id')
         total_count = find_by_name(obj, 'int', 'pTotalComments')
-        doc_count = obj.get('numreviews')
         venue = {
             'name': name,
             'address': address,

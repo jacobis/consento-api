@@ -153,6 +153,9 @@ def venue_search_request(url, params):
             storecd = ''
         object_id = obj.get('id')
         total_count = find_by_name(obj, 'int', 'pTotalComments')
+        positive_comments = find_by_name(obj, 'int', 'pPositiveComments')
+        negative_comments = find_by_name(obj, 'int', 'pNegativeComments')
+        pos_rate = find_by_name(obj, 'float', 'pPosNeg')
         venue = {
             'name': name,
             'address': address,
@@ -161,7 +164,10 @@ def venue_search_request(url, params):
             'storecd': storecd,
             'object_id': object_id,
             'total_count': total_count,
-            'doc_count': doc_count
+            'doc_count': doc_count,
+            'positive_comments': positive_comments,
+            'negative_comments': negative_comments,
+            'pos_rate': pos_rate
         }
         venue_list.append(venue)
         

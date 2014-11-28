@@ -147,7 +147,7 @@ def venue_home(request):
         if latlng:
             params['lat'] = latlng[0]
             params['lng'] = latlng[1]
-            params['sr'] = float(4.02336)
+            params['sr'] = float(1.12654)
 
         if location:
             params['ocity'] = location[0]
@@ -193,7 +193,7 @@ def venue_keyword(request):
         if latlng:
             params['lat'] = latlng[0]
             params['lng'] = latlng[1]
-            params['sr'] = float(4.02336)
+            params['sr'] = float(1.12654)
 
         if location:
             params['ocity'] = location[0]

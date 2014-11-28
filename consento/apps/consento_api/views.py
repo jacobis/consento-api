@@ -188,7 +188,7 @@ def venue_keyword(request):
         try:
             keyword = request.GET['keyword']
         except:
-            keyword = None
+            keyword = 'good'
 
         if latlng:
             params['lat'] = latlng[0]
@@ -202,8 +202,8 @@ def venue_keyword(request):
         if keyword:
             params['keyword'] = keyword
 
-        venue_list = venue_keyword_request(url, params)
-        context = wrap_success_json(venue_list)
+        keyword_list = venue_keyword_request(url, params)
+        context = wrap_success_json(keyword_list)
         logger.info('Response JSON : %s' % context)
 
         return HttpResponse(context, status=200, content_type='application/json')
@@ -215,6 +215,7 @@ def venue_keyword(request):
     except Exception as e:
         context = "Exception Error"
         logger.info('Error : %s' % e)
+        print e
         return HttpResponse(wrap_failure_json(context), status=500, content_type='application/json')
 
 
@@ -278,11 +279,13 @@ def venue_home_request(url, params):
         address = find_by_name(obj, 'str', 'oaddr')
         location = find_by_name(obj, 'str', 'latlong')
         category = find_by_name(obj, 'str', 'pYelpCategory')
+        image = None
         venue = {
             'name': name,
             'address': address,
             'location': location,
-            'category': category
+            'category': category,
+            'image': image
         }
 
         venue_list.append(venue)
@@ -300,14 +303,26 @@ def venue_home_request(url, params):
     return result
 
 
-def venue_keyword_request(request, params):
+def venue_keyword_request(url, params):
     response = requests.get(url, params=params, timeout=5)
     logger.info('GET url : %s' % response.url)
     response.raise_for_status()
 
     response = bs(response.content)
 
-    pass
+    ontology = response.find('doc', {'name': 'Ontology'})
+    if params['keyword'] == 'good':
+        city_networks = ast.literal_eval(find_by_name(ontology, 'str', 'cityNetwork'))[:10]
+    else:
+        city_networks = ast.literal_eval(find_by_name(ontology, 'str', 'cityNetwork'))[:5]
+
+    keyword_list = []
+
+    for index, cn in enumerate(city_networks):
+        keyword = cn.get('name')
+        keyword_list.append({'rank': index+1, 'keyword': keyword})
+
+    return keyword_list
 
 
 def venue_detail(request, venue_id):
@@ -346,7 +361,7 @@ def venue_detail(request, venue_id):
         overall = {'positive': positive, 'negative': negative}
 
         # Image
-
+        image = None
 
         # Keyword
         top_phrase_offline = find_by_name(ontology, 'str', 'topPhraseOffline')
@@ -356,7 +371,7 @@ def venue_detail(request, venue_id):
         i = 0
         for k in keyword_list:
             keyword[k] = len(keyword_list) - i
-            keyword_new.append({'keyword':k, 'rank': len(keyword_list) - i, 'count': '', 'related': ''})
+            keyword_new.append({'keyword':k, 'rank': len(keyword_list) - i, 'count': None, 'related': None})
             i = i + 1
 
         # Meal Type
@@ -390,13 +405,13 @@ def venue_detail(request, venue_id):
 
         gluten_free = combo_buttons.get('Gluten Free').get('frequency')
         gluten_free_avg = aspect_avg(gluten_free, total_doc)
-        gluten_free_related = ''
+        gluten_free_related = None
         vegan = combo_buttons.get('Vegan').get('frequency')
         vegan_avg = aspect_avg(vegan, total_doc)
-        vegan_related = ''
+        vegan_related = None
         vegetarian = combo_buttons.get('Vegetarian').get('frequency')
         vegetarian_avg = aspect_avg(vegetarian, total_doc)
-        vegetarian_related = ''
+        vegetarian_related = None
         dietary = {
             'gluten_free': gluten_free, 
             'gluten_free_avg': gluten_free_avg,
@@ -411,16 +426,16 @@ def venue_detail(request, venue_id):
 
         family = combo_buttons.get('Family').get('frequency')
         family_avg = aspect_avg(family, total_doc)
-        family_related = ''
+        family_related = None
         noise = combo_buttons.get('Noise').get('frequency')
         noise_avg = aspect_avg(noise, total_doc)
-        noise_related = ''
+        noise_related = None
         view = combo_buttons.get('View').get('frequency')
         view_avg = aspect_avg(view, total_doc)
-        view_related = ''
+        view_related = None
         wait = combo_buttons.get('Waiting').get('frequency')
         wait_avg = aspect_avg(wait, total_doc)
-        wait_related = ''
+        wait_related = None
         venue_preference = {
             'family': family, 
             'family_avg': family_avg,
@@ -436,7 +451,7 @@ def venue_detail(request, venue_id):
             'wait_related': wait_related
         }
 
-        venue = {'meta': meta, 'doc_count': doc_count, 'overall': overall, 'keyword': keyword, 'keyword_new': keyword_new, 'meal_type': meal_type, 'dietary': dietary, 'venue_preference': venue_preference}
+        venue = {'meta': meta, 'doc_count': doc_count, 'overall': overall, 'image': image, 'keyword': keyword, 'keyword_new': keyword_new, 'meal_type': meal_type, 'dietary': dietary, 'venue_preference': venue_preference}
 
         context = wrap_success_json(venue)
 

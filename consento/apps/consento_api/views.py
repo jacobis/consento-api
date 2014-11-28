@@ -6,6 +6,7 @@ Created on Aug 26, 2014
 @author: Ju Kyung Lee, Jacob Sungwoon Lee
 '''
 
+import ast
 import re
 import json
 import logging
@@ -128,6 +129,95 @@ def venue_search(request):
         context = 'Allowed only GET method'
         return HttpResponse(wrap_failure_json(context), status=405, content_type='application/json')
 
+@csrf_exempt
+def venue_home(request):
+    try:
+        url = 'http://9platters.com/s'
+        params = {'t': 'l', 'dr': '24', 'wt': 'xml'}
+
+        try:
+            latlng = request.GET['latlng'].split(',')
+        except:
+            latlng = None
+        try:
+            location = request.GET['location'].split(',')
+        except:
+            location = None
+
+        if latlng:
+            params['lat'] = latlng[0]
+            params['lng'] = latlng[1]
+            params['sr'] = float(4.02336)
+
+        if location:
+            params['ocity'] = location[0]
+            params['ostate'] = location[1]
+
+        params['q'] = 'good'
+
+        result = venue_home_request(url, params)
+        context = wrap_success_json(result)
+        logger.info('Response JSON : %s' % context)
+
+        return HttpResponse(context, status=200, content_type='application/json')
+
+    except requests.exceptions.Timeout as e:
+        context = "Error occurred during Connection with 9platters"
+        return HttpResponse(wrap_failure_json(context), status=500, content_type='application/json')
+
+    except Exception as e:
+        context = "Exception Error"
+        logger.info('Error : %s' % e)
+        print e
+        return HttpResponse(wrap_failure_json(context), status=500, content_type='application/json')
+
+
+@csrf_exempt
+def venue_keyword(request):
+    try:
+        url = 'http://9platters.com/s'
+        params = {'t': 'l', 'dr': '24', 'wt': 'xml'}
+
+        try:
+            latlng = request.GET['latlng'].split(',')
+        except:
+            latlng = None
+        try:
+            location = request.GET['location'].split(',')
+        except:
+            location = None
+        try:
+            keyword = request.GET['keyword']
+        except:
+            keyword = None
+
+        if latlng:
+            params['lat'] = latlng[0]
+            params['lng'] = latlng[1]
+            params['sr'] = float(4.02336)
+
+        if location:
+            params['ocity'] = location[0]
+            params['ostate'] = location[1]
+
+        if keyword:
+            params['keyword'] = keyword
+
+        venue_list = venue_keyword_request(url, params)
+        context = wrap_success_json(venue_list)
+        logger.info('Response JSON : %s' % context)
+
+        return HttpResponse(context, status=200, content_type='application/json')
+
+    except requests.exceptions.Timeout as e:
+        context = "Error occurred during Connection with 9platters"
+        return HttpResponse(wrap_failure_json(context), status=500, content_type='application/json')
+
+    except Exception as e:
+        context = "Exception Error"
+        logger.info('Error : %s' % e)
+        return HttpResponse(wrap_failure_json(context), status=500, content_type='application/json')
+
 
 def venue_search_request(url, params):
 
@@ -172,6 +262,54 @@ def venue_search_request(url, params):
         venue_list.append(venue)
         
     return venue_list
+
+
+def venue_home_request(url, params):
+    response = requests.get(url, params=params, timeout=5)
+    logger.info('GET url : %s' % response.url)
+    response.raise_for_status()
+
+    response = bs(response.content)
+    objects = response.find_all('object')
+
+    venue_list = []
+    keyword_list = []
+
+    for obj in objects:
+        name = find_by_name(obj, 'str', 'pName')
+        address = find_by_name(obj, 'str', 'oaddr')
+        location = find_by_name(obj, 'str', 'latlong')
+        category = find_by_name(obj, 'str', 'pYelpCategory')
+        venue = {
+            'name': name,
+            'address': address,
+            'location': location,
+            'category': category
+        }
+
+        venue_list.append(venue)
+
+    ontology = response.find('doc', {'name': 'Ontology'})
+    city_networks = ast.literal_eval(find_by_name(ontology, 'str', 'cityNetwork'))
+
+    for index, cn in enumerate(city_networks):
+        keyword = cn.get('name')
+        related = cn.get('relatedKeyword')
+        keyword_list.append({'rank': index+1, 'keyword': keyword, 'related': related})
+
+    result = {'venue': venue_list, 'keyword': keyword_list}
+
+    return result
+
+
+def venue_keyword_request(request, params):
+    response = requests.get(url, params=params, timeout=5)
+    logger.info('GET url : %s' % response.url)
+    response.raise_for_status()
+
+    response = bs(response.content)
+
+    pass
 
 
 def venue_detail(request, venue_id):

@@ -200,7 +200,7 @@ def venue_keyword(request):
             params['ostate'] = location[1]
 
         if keyword:
-            params['keyword'] = keyword
+            params['q'] = keyword
 
         keyword_list = venue_keyword_request(url, params)
         context = wrap_success_json(keyword_list)
@@ -311,9 +311,10 @@ def venue_keyword_request(url, params):
     response = bs(response.content)
 
     ontology = response.find('doc', {'name': 'Ontology'})
-    if params['keyword'] == 'good':
+    if params['q'] == 'good':
         city_networks = ast.literal_eval(find_by_name(ontology, 'str', 'cityNetwork'))[:10]
     else:
+        print params['q']
         city_networks = ast.literal_eval(find_by_name(ontology, 'str', 'cityNetwork'))[:5]
 
     keyword_list = []

@@ -220,7 +220,6 @@ def venue_keyword(request):
 
 
 def venue_search_request(url, params):
-
     response = requests.get(url, params=params, timeout=5)
     logger.info('GET url : %s' % response.url)
     response.raise_for_status()
@@ -290,7 +289,7 @@ def venue_home_request(url, params):
         venue_list.append(venue)
 
     ontology = response.find('doc', {'name': 'Ontology'})
-    city_networks = ast.literal_eval(find_by_name(ontology, 'str', 'cityNetwork'))
+    city_networks = ast.literal_eval(find_by_name(ontology, 'str', 'cityNetwork'))[:10]
 
     for index, cn in enumerate(city_networks):
         keyword = cn.get('name')

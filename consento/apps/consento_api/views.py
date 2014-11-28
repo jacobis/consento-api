@@ -168,7 +168,6 @@ def venue_home(request):
     except Exception as e:
         context = "Exception Error"
         logger.info('Error : %s' % e)
-        print e
         return HttpResponse(wrap_failure_json(context), status=500, content_type='application/json')
 
 
@@ -312,7 +311,6 @@ def venue_keyword_request(request, params):
 
 
 def venue_detail(request, venue_id):
-    
     try:
         object_id = 'oid:' + venue_id
 
@@ -347,13 +345,18 @@ def venue_detail(request, venue_id):
         negative = find_by_name(ontology, 'int', 'neg')
         overall = {'positive': positive, 'negative': negative}
 
+        # Image
+
+
         # Keyword
         top_phrase_offline = find_by_name(ontology, 'str', 'topPhraseOffline')
         keyword_list = re.split('\t|/', top_phrase_offline)[::2]
         keyword = {}
+        keyword_new = []
         i = 0
         for k in keyword_list:
             keyword[k] = len(keyword_list) - i
+            keyword_new.append({'keyword':k, 'rank': len(keyword_list) - i, 'count': '', 'related': ''})
             i = i + 1
 
         # Meal Type
@@ -386,17 +389,54 @@ def venue_detail(request, venue_id):
             combo_buttons[name] = {'frequency': frequency, 'pos': pos, 'neg': neg}
 
         gluten_free = combo_buttons.get('Gluten Free').get('frequency')
+        gluten_free_avg = aspect_avg(gluten_free, total_doc)
+        gluten_free_related = ''
         vegan = combo_buttons.get('Vegan').get('frequency')
+        vegan_avg = aspect_avg(vegan, total_doc)
+        vegan_related = ''
         vegetarian = combo_buttons.get('Vegetarian').get('frequency')
-        dietary = {'gluten_free': gluten_free, 'vegan': vegan, 'vegetarian': vegetarian}
+        vegetarian_avg = aspect_avg(vegetarian, total_doc)
+        vegetarian_related = ''
+        dietary = {
+            'gluten_free': gluten_free, 
+            'gluten_free_avg': gluten_free_avg,
+            'gluten_free_related': gluten_free_related,
+            'vegan': vegan, 
+            'vegan_avg': vegan_avg,
+            'vegan_related': vegan_related,
+            'vegetarian': vegetarian,
+            'vegetarian_avg': vegetarian_avg,
+            'vegetarian_related': vegetarian_related
+        }
 
         family = combo_buttons.get('Family').get('frequency')
+        family_avg = aspect_avg(family, total_doc)
+        family_related = ''
         noise = combo_buttons.get('Noise').get('frequency')
+        noise_avg = aspect_avg(noise, total_doc)
+        noise_related = ''
         view = combo_buttons.get('View').get('frequency')
+        view_avg = aspect_avg(view, total_doc)
+        view_related = ''
         wait = combo_buttons.get('Waiting').get('frequency')
-        venue_preference = {'family': family, 'noise': noise, 'view': view, 'wait': wait}
+        wait_avg = aspect_avg(wait, total_doc)
+        wait_related = ''
+        venue_preference = {
+            'family': family, 
+            'family_avg': family_avg,
+            'family_related': family_related,
+            'noise': noise, 
+            'noise_avg': noise_avg,
+            'noise_related': noise_related,
+            'view': view, 
+            'view_avg': view_avg,
+            'view_related': view_related,
+            'wait': wait,
+            'wait_avg': wait_avg,
+            'wait_related': wait_related
+        }
 
-        venue = {'meta': meta, 'doc_count': doc_count, 'overall': overall, 'keyword': keyword, 'meal_type': meal_type, 'dietary': dietary, 'venue_preference': venue_preference}
+        venue = {'meta': meta, 'doc_count': doc_count, 'overall': overall, 'keyword': keyword, 'keyword_new': keyword_new, 'meal_type': meal_type, 'dietary': dietary, 'venue_preference': venue_preference}
 
         context = wrap_success_json(venue)
 
@@ -410,3 +450,7 @@ def venue_detail(request, venue_id):
         context = "Exception Error"
         logger.info('Error : %s' % e)
         return HttpResponse(wrap_failure_json(context), status=500, content_type='application/json')
+
+
+def aspect_avg(aspect, total_doc, total_aspect=155150, total_segment=40063501):
+    return (float(aspect) / float(total_doc)) / (float(total_aspect) / float(total_segment))

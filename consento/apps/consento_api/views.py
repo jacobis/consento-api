@@ -215,7 +215,6 @@ def venue_keyword(request):
     except Exception as e:
         context = "Exception Error"
         logger.info('Error : %s' % e)
-        print e
         return HttpResponse(wrap_failure_json(context), status=500, content_type='application/json')
 
 
@@ -314,7 +313,6 @@ def venue_keyword_request(url, params):
     if params['q'] == 'good':
         city_networks = ast.literal_eval(find_by_name(ontology, 'str', 'cityNetwork'))[:10]
     else:
-        print params['q']
         city_networks = ast.literal_eval(find_by_name(ontology, 'str', 'cityNetwork'))[:5]
 
     keyword_list = []
@@ -365,15 +363,20 @@ def venue_detail(request, venue_id):
         image = None
 
         # Keyword
-        top_phrase_offline = find_by_name(ontology, 'str', 'topPhraseOffline')
-        keyword_list = re.split('\t|/', top_phrase_offline)[::2]
+        object_meta = response.find('doc', {'name': 'ObjectMeta'})
+        try:
+            top_phrase_with_related = ast.literal_eval(find_by_name(object_meta, 'str', 'pTopPhraseWithRelated'))
+        except:
+            top_phrase_with_related = {}
+        
+        keyword_list = top_phrase_with_related.values()
+        
         keyword = {}
-        keyword_new = []
-        i = 0
-        for k in keyword_list:
-            keyword[k] = len(keyword_list) - i
-            keyword_new.append({'keyword':k, 'rank': len(keyword_list) - i, 'count': None, 'related': None})
-            i = i + 1
+        keyword_new = top_phrase_with_related
+
+        if keyword_list:
+            for k in keyword_list:
+                keyword[k.get('keyword')] = k.get('rank')
 
         # Meal Type
         other_times = find_by_name(ontology, 'str', 'othersTimes')
@@ -404,15 +407,20 @@ def venue_detail(request, venue_id):
             neg = datum.get('neg')
             combo_buttons[name] = {'frequency': frequency, 'pos': pos, 'neg': neg}
 
+        try:
+            preference_related = ast.literal_eval(find_by_name(object_meta, 'str', 'pPrefRelated'))
+        except:
+            preference_related = {}
+
         gluten_free = combo_buttons.get('Gluten Free').get('frequency')
         gluten_free_avg = aspect_avg(gluten_free, total_doc)
-        gluten_free_related = None
+        gluten_free_related = preference_related.get('Gluten Free')
         vegan = combo_buttons.get('Vegan').get('frequency')
         vegan_avg = aspect_avg(vegan, total_doc)
-        vegan_related = None
+        vegan_related = preference_related.get('Vegan')
         vegetarian = combo_buttons.get('Vegetarian').get('frequency')
         vegetarian_avg = aspect_avg(vegetarian, total_doc)
-        vegetarian_related = None
+        vegetarian_related = preference_related.get('Vegetarian')
         dietary = {
             'gluten_free': gluten_free, 
             'gluten_free_avg': gluten_free_avg,
@@ -427,16 +435,16 @@ def venue_detail(request, venue_id):
 
         family = combo_buttons.get('Family').get('frequency')
         family_avg = aspect_avg(family, total_doc)
-        family_related = None
+        family_related = preference_related.get('Family')
         noise = combo_buttons.get('Noise').get('frequency')
         noise_avg = aspect_avg(noise, total_doc)
-        noise_related = None
+        noise_related = preference_related.get('Noise')
         view = combo_buttons.get('View').get('frequency')
         view_avg = aspect_avg(view, total_doc)
-        view_related = None
+        view_related = preference_related.get('View')
         wait = combo_buttons.get('Waiting').get('frequency')
         wait_avg = aspect_avg(wait, total_doc)
-        wait_related = None
+        wait_related = preference_related.get('Waiting')
         venue_preference = {
             'family': family, 
             'family_avg': family_avg,

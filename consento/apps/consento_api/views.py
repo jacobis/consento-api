@@ -273,18 +273,28 @@ def venue_home_request(url, params):
     venue_list = []
     keyword_list = []
 
-    for obj in objects:
-        name = find_by_name(obj, 'str', 'pName')
+    for index, obj in enumerate(objects):
         address = find_by_name(obj, 'str', 'oaddr')
-        location = find_by_name(obj, 'str', 'latlong')
         category = find_by_name(obj, 'str', 'pYelpCategory')
         image = None
+        location = find_by_name(obj, 'str', 'latlong')
+        name = find_by_name(obj, 'str', 'pName')
+        object_id = obj.get('id')
+        rank = index + 1
+        try:
+            related_keyword = find_by_name(obj, 'str', 'pTopPhraseSet_StemmedString').split(' /')
+        except:
+            related_keyword = []
+
         venue = {
-            'name': name,
             'address': address,
-            'location': location,
             'category': category,
-            'image': image
+            'image': image,
+            'location': location,
+            'name': name,
+            'object_id': object_id,
+            'rank': rank,
+            'related_keyword': related_keyword
         }
 
         venue_list.append(venue)

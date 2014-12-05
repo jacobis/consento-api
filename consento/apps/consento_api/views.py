@@ -142,15 +142,24 @@ def venue_home(request):
             latlng = request.GET['latlng'].split(',')
         except:
             latlng = None
+
         try:
             location = request.GET['location'].split(',')
         except:
             location = None
 
         if latlng:
-            params['lat'] = latlng[0]
-            params['lng'] = latlng[1]
-            params['sr'] = float(1.12654)
+            latlng = coordinate_swapper(latlng)
+
+            if len(latlng) == 4:
+                params['latmin'] = latlng[0]
+                params['lngmin'] = latlng[1]
+                params['latmax'] = latlng[2]
+                params['lngmax'] = latlng[3]
+            else:
+                params['lat'] = latlng[0]
+                params['lng'] = latlng[1]
+                params['sr'] = float(1.12654)
 
         if location:
             params['ocity'] = location[0]

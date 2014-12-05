@@ -20,6 +20,9 @@ from libs.utils.beautifulsoup_wrapper import find_by_name
 from libs.utils.coordinate import coordinate_swapper
 from libs.utils.json_wrapper import wrap_success_json, wrap_failure_json
 
+from .models import Venue
+
+
 logger = logging.getLogger('api')
 
 @csrf_exempt
@@ -274,9 +277,11 @@ def venue_home_request(url, params):
     keyword_list = []
 
     for index, obj in enumerate(objects):
+        yelp_biz = find_by_name(obj, 'str', 'pYelpBiz')
+
         address = find_by_name(obj, 'str', 'oaddr')
         category = find_by_name(obj, 'str', 'pYelpCategory')
-        image = None
+        image = image_finder(yelp_biz)
         location = find_by_name(obj, 'str', 'latlong')
         name = find_by_name(obj, 'str', 'pName')
         object_id = obj.get('id')
@@ -354,8 +359,8 @@ def venue_detail(request, venue_id):
         address = find_by_name(meta, 'str', 'pAddress')
         phone_number = find_by_name(meta, 'str', 'pPhoneNumber')
         yelp_id = find_by_name(meta, 'str', 'id')
-        yelp_url = find_by_name(meta, 'str', 'pYelpBiz')
-        yelp_url = 'http://www.yelp.com/biz/' + yelp_url if yelp_url else None
+        yelp_biz = find_by_name(meta, 'str', 'pYelpBiz')
+        yelp_url = 'http://www.yelp.com/biz/' + yelp_biz if yelp_biz else None
         location = find_by_name(meta, 'str', 'pLatLong')
         meta = {'name': name, 'category': category, 'address': address, 'phone_number': phone_number, 'yelp_id': yelp_id, 'yelp_url': yelp_url, 'location': location}
 
@@ -370,7 +375,7 @@ def venue_detail(request, venue_id):
         overall = {'positive': positive, 'negative': negative}
 
         # Image
-        image = None
+        image = image_finder(yelp_biz)
 
         # Keyword
         object_meta = response.find('doc', {'name': 'ObjectMeta'})
@@ -488,3 +493,14 @@ def venue_detail(request, venue_id):
 
 def aspect_avg(aspect, total_doc, total_aspect=155150, total_segment=40063501):
     return (float(aspect) / float(total_doc)) / (float(total_aspect) / float(total_segment))
+
+
+def image_finder(key):
+    image_objects = Venue.objects.filter(key=key, version="2014")
+    
+    if not image_objects:
+        image_objects = Venue.objects.filter(key=key, version="2014_additional")
+
+    images = [image_object.image_url for image_object in image_objects]
+
+    return images

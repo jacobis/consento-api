@@ -69,16 +69,10 @@ def venue_search(request):
 
             if latlng:
                 latlng = coordinate_swapper(latlng)
-
-                if len(latlng) == 4:
-                    params['latmin'] = latlng[0]
-                    params['lngmin'] = latlng[1]
-                    params['latmax'] = latlng[2]
-                    params['lngmax'] = latlng[3]
-                else:
-                    params['lat'] = latlng[0]
-                    params['lng'] = latlng[1]
-                    params['sr'] = float(4.02336)
+                params['latmin'] = latlng[0]
+                params['lngmin'] = latlng[1]
+                params['latmax'] = latlng[2]
+                params['lngmax'] = latlng[3]
 
             if location:
                 params['ocity'] = location[0]
@@ -150,16 +144,10 @@ def venue_home(request):
 
         if latlng:
             latlng = coordinate_swapper(latlng)
-
-            if len(latlng) == 4:
-                params['latmin'] = latlng[0]
-                params['lngmin'] = latlng[1]
-                params['latmax'] = latlng[2]
-                params['lngmax'] = latlng[3]
-            else:
-                params['lat'] = latlng[0]
-                params['lng'] = latlng[1]
-                params['sr'] = float(1.12654)
+            params['latmin'] = latlng[0]
+            params['lngmin'] = latlng[1]
+            params['latmax'] = latlng[2]
+            params['lngmax'] = latlng[3]
 
         if location:
             params['ocity'] = location[0]
@@ -203,9 +191,11 @@ def venue_keyword(request):
             keyword = 'good'
 
         if latlng:
-            params['lat'] = latlng[0]
-            params['lng'] = latlng[1]
-            params['sr'] = float(1.12654)
+            latlng = coordinate_swapper(latlng)
+            params['latmin'] = latlng[0]
+            params['lngmin'] = latlng[1]
+            params['latmax'] = latlng[2]
+            params['lngmax'] = latlng[3]
 
         if location:
             params['ocity'] = location[0]

@@ -38,7 +38,7 @@ ACTIVATE = 'source %s/consento-api/bin/activate' % SERVER_WORKON_HOME
 def app():
     env.setdefault('django_settings_module', '--settings=%s' % SERVER_DJANGO_SETTINGS_MODULE)
     env.roles = ['app']
-    env.key_filename = '/Users/jacob/Dropbox/Development/DMIS_KEY.pem'
+    env.key_filename = '/Users/jacob/Dropbox/Development/Keys/DMIS_KEY.pem'
 
 ########## END SERVERS
 

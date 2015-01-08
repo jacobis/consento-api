@@ -366,12 +366,6 @@ def venue_detail(request, venue_id):
         # Doc Count
         total_doc = response.find('result', {'name': 'response'}).get('numsegs')
         doc_count = {'total_doc': total_doc}
-        
-        # Overall
-        ontology = response.find('doc', {'name': 'Ontology'})
-        positive = find_by_name(ontology, 'int', 'pos')
-        negative = find_by_name(ontology, 'int', 'neg')
-        overall = {'positive': positive, 'negative': negative}
 
         # Image
         image = image_finder(yelp_biz)
@@ -392,7 +386,15 @@ def venue_detail(request, venue_id):
             for k in keyword_list:
                 keyword[k.get('keyword')] = k.get('rank')
 
+        # Overall
+        positive = find_by_name(object_meta, 'int', 'pPositiveComments')
+        positive = response.find('int', {'name': 'posSeg'}).text if positive is None else positive
+        negative = find_by_name(object_meta, 'int', 'pNegativeComments')
+        negative = response.find('int', {'name': 'negSeg'}).text if negative is None else negative
+        overall = {'positive': positive, 'negative': negative}
+
         # Meal Type
+        ontology = response.find('doc', {'name': 'Ontology'})
         other_times = find_by_name(ontology, 'str', 'othersTimes')
         other_times = other_times.replace(',];', ']')
         exec(other_times)

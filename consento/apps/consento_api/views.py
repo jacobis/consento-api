@@ -42,7 +42,7 @@ def venue_search(request):
                 curl -i -H "Accept: application/json" -X GET "http://localhost:8000/v1/venues/search?location=San+Jose,CA&query=pizza"
 
             with Coordinate :
-                curl -i -H "Accept: application/json" -X GET "http://localhost:8000/v1/venues/search?latlng=37.76625,-122.42212&query=pizza"
+                curl -i -H "Accept: application/json" -X GET "http://localhost:8000/v1/venues/search?latlng=37.756,-122.454,37.856,-122.354&location=San+Jose,CA&query=pizza"
 
         Return:
             Result data is following format:
@@ -54,8 +54,8 @@ def venue_search(request):
         '''
 
         try:
-            url = 'http://9platters.com/tgrape'
-            params = {'t': 'l', 'dr': '24', 'wt': 'xml'}
+            url = 'http://ec2-54-183-94-75.us-west-1.compute.amazonaws.com/s'
+            params = {'ocat': 1, 'fl': '*', 't': 'lt'}
 
             try:
                 latlng = request.GET['latlng'].split(',')
@@ -63,20 +63,16 @@ def venue_search(request):
                 latlng = None
 
             try:
-                location = request.GET['location'].split(',')
+                location = request.GET['location']
             except:
                 location = None
 
             if latlng:
                 latlng = coordinate_swapper(latlng)
-                params['latmin'] = latlng[0]
-                params['lngmin'] = latlng[1]
-                params['latmax'] = latlng[2]
-                params['lngmax'] = latlng[3]
+                params['latlng'] = ",".join(str(ll) for ll in latlng)
 
             if location:
-                params['ocity'] = location[0]
-                params['ostate'] = location[1]
+                params['location'] = location
 
             try:
                 original_queries = request.GET['query']
@@ -91,20 +87,6 @@ def venue_search(request):
 
                 venue_list = {'and_result': and_result, 'or_result': or_result}
 
-                # queries_list = request.GET['query'].split(' ')
-                # if len(queries_list) >= 2:
-                #     params['q'] = ' '.join(queries_list)
-                #     or_result = venue_search_request(url, params)
-
-                #     queries = ''.join('+(' + query + ')' for query in queries_list)
-                #     params['q'] = queries
-                #     and_result = venue_search_request(url, params)
-
-                #     venue_list = {'and_result': and_result, 'or_result': or_result}
-                # else:
-                #     params['q'] = ' '.join(queries_list)
-                #     venue_list = venue_search_request(url, params)
-
             except:
                 venue_list = venue_search_request(url, params)
 
@@ -112,7 +94,7 @@ def venue_search(request):
             logger.info('Response JSON : %s' % context)
 
             return HttpResponse(context, status=200, content_type='application/json')
-    
+        
         except requests.exceptions.Timeout as e:
             context = "Error occurred during Connection with 9platters"
             return HttpResponse(wrap_failure_json(context), status=500, content_type='application/json')
@@ -129,8 +111,8 @@ def venue_search(request):
 @csrf_exempt
 def venue_home(request):
     try:
-        url = 'http://9platters.com/s'
-        params = {'t': 'l', 'dr': '24', 'wt': 'xml'}
+        url = 'http://ec2-54-183-94-75.us-west-1.compute.amazonaws.com/s'
+        params = {'ocat': 1, 'fl': '*', 't': 'lt'}
 
         try:
             latlng = request.GET['latlng'].split(',')
@@ -138,22 +120,18 @@ def venue_home(request):
             latlng = None
 
         try:
-            location = request.GET['location'].split(',')
+            location = request.GET['location']
         except:
             location = None
 
         if latlng:
             latlng = coordinate_swapper(latlng)
-            params['latmin'] = latlng[0]
-            params['lngmin'] = latlng[1]
-            params['latmax'] = latlng[2]
-            params['lngmax'] = latlng[3]
+            params['latlng'] = ",".join(str(ll) for ll in latlng)
 
         if location:
-            params['ocity'] = location[0]
-            params['ostate'] = location[1]
+            params['location'] = location
 
-        params['q'] = 'good'
+        params['q'] = 'pizza'
 
         result = venue_home_request(url, params)
         context = wrap_success_json(result)
@@ -225,33 +203,29 @@ def venue_search_request(url, params):
     logger.info('GET url : %s' % response.url)
     response.raise_for_status()
 
-    response = bs(response.content)
-    objects = response.find_all('object')
+    response = response.json()
+    response = response.get('response')
 
     venue_list = []
 
-    for obj in objects:
-        doc_count = int(obj.get('numfound'))
+    doc_count = response.get('numfound')
+
+    for obj in response.get('docs'):
         if doc_count == 1: continue
-        name = find_by_name(obj, 'str', 'pName')
-        address = find_by_name(obj, 'str', 'oaddr')
-        location = find_by_name(obj, 'str', 'latlong')
-        category = find_by_name(obj, 'str', 'pYelpCategory')
-        try:
-            storecd = find_by_name(obj, 'str', 'STORECD')
-        except:
-            storecd = ''
-        object_id = obj.get('id')
-        total_count = find_by_name(obj, 'int', 'pTotalComments')
-        positive_comments = find_by_name(obj, 'int', 'pPositiveComments')
-        negative_comments = find_by_name(obj, 'int', 'pNegativeComments')
-        pos_rate = find_by_name(obj, 'float', 'pPosNeg')
+        name = obj.get('pNames')[0]
+        address = obj.get('pAddresses')[0]
+        location = obj.get('pLatLong')
+        category = obj.get('pCategory')[0]
+        object_id = obj.get('pObjectID')
+        total_count = obj.get('pTotalComments')
+        positive_comments = obj.get('pPositiveComments')
+        negative_comments = obj.get('pNegativeComments')
+        pos_rate = positive_comments / (positive_comments + negative_comments) * 100
         venue = {
             'name': name,
             'address': address,
             'location': location,
             'category': category,
-            'storecd': storecd,
             'object_id': object_id,
             'total_count': total_count,
             'doc_count': str(doc_count),
@@ -269,24 +243,25 @@ def venue_home_request(url, params):
     logger.info('GET url : %s' % response.url)
     response.raise_for_status()
 
-    response = bs(response.content)
-    objects = response.find_all('object')
+    response = response.json()
+    top_keywords = response.get('TopKeywords')
+    response = response.get('response')
 
     venue_list = []
     keyword_list = []
 
-    for index, obj in enumerate(objects):
-        yelp_biz = find_by_name(obj, 'str', 'pYelpBiz')
+    for index, obj in enumerate(response.get('docs')):
 
-        address = find_by_name(obj, 'str', 'oaddr')
-        category = find_by_name(obj, 'str', 'pYelpCategory')
-        image = image_finder(yelp_biz)
-        location = find_by_name(obj, 'str', 'latlong')
-        name = find_by_name(obj, 'str', 'pName')
-        object_id = obj.get('id')
+        address = obj.get('pAddresses')[0]
+        category = obj.get('pCategory')[0]
+        image = obj.get('image')
+        location = obj.get('pLatLong')
+        name = obj.get('pNames')[0]
+        object_id = obj.get('pObjectID')
         rank = index + 1
+
         try:
-            related_keyword = find_by_name(obj, 'str', 'pTopPhraseSet_StemmedString').split(' /')
+            related_keyword = [tp['name'] for tp in obj.get('pTopPhrase')]
         except:
             related_keyword = []
 
@@ -303,15 +278,7 @@ def venue_home_request(url, params):
 
         venue_list.append(venue)
 
-    ontology = response.find('doc', {'name': 'Ontology'})
-    city_networks = ast.literal_eval(find_by_name(ontology, 'str', 'cityNetwork'))[:10]
-
-    for index, cn in enumerate(city_networks):
-        keyword = cn.get('name')
-        related = cn.get('relatedKeyword')
-        keyword_list.append({'rank': index+1, 'keyword': keyword, 'related': related})
-
-    result = {'venue': venue_list, 'keyword': keyword_list}
+    result = {'venue': venue_list, 'keyword': top_keywords}
 
     return result
 
@@ -340,103 +307,72 @@ def venue_keyword_request(url, params):
 
 def venue_detail(request, venue_id):
     try:
-        object_id = 'oid:' + venue_id
+        object_id = "pObjectID:" + venue_id
 
-        url = 'http://9platters.com/s'
-        params = {'q': object_id, 't': 'd', 'wt': 'xml'}
+        url = 'http://ec2-54-183-94-75.us-west-1.compute.amazonaws.com/s'
+        params = {'q': object_id, 'fl': '*'}
 
         response = requests.get(url, params=params, timeout=5)
         logger.info('GET url : %s' % response.url)
         response.raise_for_status()
 
-        response = bs(response.content)
+        response = response.json()
+        response = response.get('response')
+        response = response.get('docs')[0]
 
         # Meta
-        meta = response.find('doc', {'name': 'ObjectMeta'})
-        name = find_by_name(meta, 'str', 'pName')
-        category = find_by_name(meta, 'str', 'pYelpCategory')
-        address = find_by_name(meta, 'str', 'pAddress')
-        phone_number = find_by_name(meta, 'str', 'pPhoneNumber')
-        yelp_id = find_by_name(meta, 'str', 'id')
-        yelp_biz = find_by_name(meta, 'str', 'pYelpBiz')
+        name = response.get('pNames')[0]
+        category = response.get('pCategory')[0]
+        address = response.get('pAddresses')[0]
+        phone_number = response.get('pPhoneNumbers')[0]
+        yelp_id = response.get('id')
+        yelp_biz = response.get('pKey_yelp')[0]
         yelp_url = 'http://www.yelp.com/biz/' + yelp_biz if yelp_biz else None
-        location = find_by_name(meta, 'str', 'pLatLong')
+        location = response.get('pLatLong')
         meta = {'name': name, 'category': category, 'address': address, 'phone_number': phone_number, 'yelp_id': yelp_id, 'yelp_url': yelp_url, 'location': location}
 
         # Doc Count
-        total_doc = response.find('result', {'name': 'response'}).get('numsegs')
-        doc_count = {'total_doc': total_doc}
+        doc_count = response.get('pTotalComments')
+        total_doc = doc_count
 
         # Image
-        image = image_finder(yelp_biz)
+        image = response.get('image')
 
         # Keyword
-        object_meta = response.find('doc', {'name': 'ObjectMeta'})
-        try:
-            top_phrase_with_related = ast.literal_eval(find_by_name(object_meta, 'str', 'pTopPhraseWithRelated'))
-        except:
-            top_phrase_with_related = {}
-        
-        keyword_list = top_phrase_with_related.values()
-        
         keyword = {}
-        keyword_new = top_phrase_with_related
-
-        if keyword_list:
-            for k in keyword_list:
-                keyword[k.get('keyword')] = k.get('rank')
+        keyword_new = {}
 
         # Overall
-        positive = find_by_name(object_meta, 'int', 'pPositiveComments')
-        positive = response.find('int', {'name': 'posSeg'}).text if positive is None else positive
-        negative = find_by_name(object_meta, 'int', 'pNegativeComments')
-        negative = response.find('int', {'name': 'negSeg'}).text if negative is None else negative
+        positive = response.get('pPositiveComments')
+        negative = response.get('pNegativeComments')
         overall = {'positive': positive, 'negative': negative}
 
+        # Pref Relateds
+        pref_related = response.get('pPrefRelated')
+        pref_relateds = {}
+        for pr in pref_related:
+            for pr in pr.values():
+                for i in pr:
+                    pref_relateds.update(i)
+        
         # Meal Type
-        ontology = response.find('doc', {'name': 'Ontology'})
-        other_times = find_by_name(ontology, 'str', 'othersTimes')
-        other_times = other_times.replace(',];', ']')
-        exec(other_times)
-        other_times = {}
-        for datum in data:
-            name = datum.get('name').strip(' ')
-            value = datum.get('value')
-            other_times[name] = value
-
-        breakfast = other_times.get('Breakfast')
-        brunch = other_times.get('Brunch')
-        lunch = other_times.get('Lunch')
-        dinner = other_times.get('Dinner')
-        dessert = other_times.get('Dessert')
+        breakfast = pref_relateds.get('Breakfast')
+        brunch = pref_relateds.get('Brunch')
+        lunch = pref_relateds.get('Lunch')
+        dinner = pref_relateds.get('Dinner')
+        dessert = pref_relateds.get('Dessert')
         meal_type = {'breakfast': breakfast, 'brunch': brunch, 'lunch': lunch, 'dinner': dinner, 'dessert': dessert}
 
         # Dietary & Venue Preference
-        combo_buttons = find_by_name(ontology, 'str', 'ComboButtons')
-        combo_buttons = combo_buttons.replace(',];', ']')
-        exec(combo_buttons)
-        combo_buttons = {}
-        for datum in data:
-            name = datum.get('name').strip(' ')
-            frequency = datum.get('frequency')
-            pos = datum.get('pos')
-            neg = datum.get('neg')
-            combo_buttons[name] = {'frequency': frequency, 'pos': pos, 'neg': neg}
-
-        try:
-            preference_related = ast.literal_eval(find_by_name(object_meta, 'str', 'pPrefRelated'))
-        except:
-            preference_related = {}
-
-        gluten_free = combo_buttons.get('Gluten Free').get('frequency')
-        gluten_free_avg = aspect_avg(gluten_free, total_doc)
-        gluten_free_related = preference_related.get('Gluten Free')
-        vegan = combo_buttons.get('Vegan').get('frequency')
+        gluten_free = ""
+        gluten_free_avg = ""
+        gluten_free_related = ""
+        vegan = pref_relateds.get('Vegan')
         vegan_avg = aspect_avg(vegan, total_doc)
-        vegan_related = preference_related.get('Vegan')
-        vegetarian = combo_buttons.get('Vegetarian').get('frequency')
+        vegan_related = ""
+        vegetarian = pref_relateds.get('Vegetarian')
         vegetarian_avg = aspect_avg(vegetarian, total_doc)
-        vegetarian_related = preference_related.get('Vegetarian')
+        vegetarian_related = ""
         dietary = {
             'gluten_free': gluten_free, 
             'gluten_free_avg': gluten_free_avg,
@@ -449,18 +385,18 @@ def venue_detail(request, venue_id):
             'vegetarian_related': vegetarian_related
         }
 
-        family = combo_buttons.get('Family').get('frequency')
+        family = pref_relateds.get('Family')
         family_avg = aspect_avg(family, total_doc)
-        family_related = preference_related.get('Family')
-        noise = combo_buttons.get('Noise').get('frequency')
+        family_related = ""
+        noise = pref_relateds.get('Noise')
         noise_avg = aspect_avg(noise, total_doc)
-        noise_related = preference_related.get('Noise')
-        view = combo_buttons.get('View').get('frequency')
+        noise_related = ""
+        view = pref_relateds.get('View')
         view_avg = aspect_avg(view, total_doc)
-        view_related = preference_related.get('View')
-        wait = combo_buttons.get('Waiting').get('frequency')
+        view_related = ""
+        wait = pref_relateds.get('Waiting')
         wait_avg = aspect_avg(wait, total_doc)
-        wait_related = preference_related.get('Waiting')
+        wait_related = ""
         venue_preference = {
             'family': family, 
             'family_avg': family_avg,

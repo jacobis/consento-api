@@ -329,7 +329,7 @@ def venue_detail(request, venue_id):
         address = response.get('pAddresses')[0]
         phone_number = response.get('pPhoneNumbers')[0]
         yelp_id = response.get('id')
-        yelp_biz = response.get('pKey_yelp')[0]
+        yelp_biz = response.get('pKey_yelp')[0] if response.get('pKey_yelp') else None
         yelp_url = 'http://www.yelp.com/biz/' + yelp_biz if yelp_biz else None
         location = response.get('pLatLong')
         meta = {'name': name, 'category': category, 'address': address, 'phone_number': phone_number, 'yelp_id': yelp_id, 'yelp_url': yelp_url, 'location': location}
@@ -353,10 +353,12 @@ def venue_detail(request, venue_id):
         # Pref Relateds
         pref_related = response.get('pPrefRelated')
         pref_relateds = {}
-        for pr in pref_related:
-            for pr in pr.values():
-                for i in pr:
-                    pref_relateds.update(i)
+
+        if pref_related:
+            for pr in pref_related:
+                for pr in pr.values():
+                    for i in pr:
+                        pref_relateds.update(i)
         
         # Meal Type
         breakfast = pref_relateds.get('Breakfast')
@@ -367,15 +369,15 @@ def venue_detail(request, venue_id):
         meal_type = {'breakfast': breakfast, 'brunch': brunch, 'lunch': lunch, 'dinner': dinner, 'dessert': dessert}
 
         # Dietary & Venue Preference
-        gluten_free = ""
-        gluten_free_avg = ""
-        gluten_free_related = ""
+        gluten_free = None
+        gluten_free_avg = None
+        gluten_free_related = None
         vegan = pref_relateds.get('Vegan')
         vegan_avg = aspect_avg(vegan, total_doc)
-        vegan_related = ""
+        vegan_related = None
         vegetarian = pref_relateds.get('Vegetarian')
         vegetarian_avg = aspect_avg(vegetarian, total_doc)
-        vegetarian_related = ""
+        vegetarian_related = None
         dietary = {
             'gluten_free': gluten_free, 
             'gluten_free_avg': gluten_free_avg,
@@ -390,16 +392,16 @@ def venue_detail(request, venue_id):
 
         family = pref_relateds.get('Family')
         family_avg = aspect_avg(family, total_doc)
-        family_related = ""
+        family_related = None
         noise = pref_relateds.get('Noise')
         noise_avg = aspect_avg(noise, total_doc)
-        noise_related = ""
+        noise_related = None
         view = pref_relateds.get('View')
         view_avg = aspect_avg(view, total_doc)
-        view_related = ""
+        view_related = None
         wait = pref_relateds.get('Waiting')
         wait_avg = aspect_avg(wait, total_doc)
-        wait_related = ""
+        wait_related = None
         venue_preference = {
             'family': family, 
             'family_avg': family_avg,
@@ -432,7 +434,8 @@ def venue_detail(request, venue_id):
 
 
 def aspect_avg(aspect, total_doc, total_aspect=155150, total_segment=40063501):
-    return (float(aspect) / float(total_doc)) / (float(total_aspect) / float(total_segment))
+    aspect_avg = (float(aspect) / float(total_doc)) / (float(total_aspect) / float(total_segment)) if aspect and total_doc else None
+    return aspect_avg
 
 
 def image_finder(key):

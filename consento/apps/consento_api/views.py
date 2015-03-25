@@ -220,7 +220,10 @@ def venue_search_request(url, params):
         total_count = obj.get('pTotalComments')
         positive_comments = obj.get('pPositiveComments')
         negative_comments = obj.get('pNegativeComments')
-        pos_rate = positive_comments / (positive_comments + negative_comments) * 100
+        try:
+            pos_rate = float(positive_comments) / float(positive_comments + negative_comments) * 100
+        except:
+            pos_rate = ""
         venue = {
             'name': name,
             'address': address,

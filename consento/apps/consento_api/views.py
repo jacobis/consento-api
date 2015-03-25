@@ -94,7 +94,7 @@ def venue_search(request):
             logger.info('Response JSON : %s' % context)
 
             return HttpResponse(context, status=200, content_type='application/json')
-        
+    
         except requests.exceptions.Timeout as e:
             context = "Error occurred during Connection with 9platters"
             return HttpResponse(wrap_failure_json(context), status=500, content_type='application/json')
@@ -208,7 +208,7 @@ def venue_search_request(url, params):
 
     venue_list = []
 
-    doc_count = response.get('numfound')
+    doc_count = response.get('numFound')
 
     for obj in response.get('docs'):
         if doc_count == 1: continue
@@ -223,7 +223,7 @@ def venue_search_request(url, params):
         try:
             pos_rate = float(positive_comments) / float(positive_comments + negative_comments) * 100
         except:
-            pos_rate = ""
+            pos_rate = None
         venue = {
             'name': name,
             'address': address,

@@ -254,7 +254,7 @@ def venue_search_request(url, params):
             'storecd': storecd,
             'object_id': object_id,
             'total_count': total_count,
-            'doc_count': doc_count,
+            'doc_count': str(doc_count),
             'positive_comments': positive_comments,
             'negative_comments': negative_comments,
             'pos_rate': pos_rate

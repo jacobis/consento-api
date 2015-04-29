@@ -124,6 +124,7 @@ def venue_search(request):
         context = 'Allowed only GET method'
         return HttpResponse(wrap_failure_json(context), status=405, content_type='application/json')
 
+
 @csrf_exempt
 def venue_home(request):
     if request.method == 'GET':
@@ -143,6 +144,11 @@ def venue_home(request):
 
         Return:
             Result data is following format:
+            {"data": 
+                {"venue": [{"category": "Sushi Bars", "rank": 1, "name": "Cha Cha Sushi", "address": "547 W Capitol Expy San Jose, CA 95136, United States", "image": "http://54.67.62.180/2014/restaurants/ca/san_jose/cha-cha-sushi-san-jose/1.jpg", "related_keyword": ["Brandon roll", "Cha Cha Sushi", "Cha Cha Sushi"], "object_id": "219448", "location": "37.275925,-121.85314"}], 
+                "keyword": [{"name": "orange sauce", "rank": 1}, {"name": "green tea ice cream", "rank": 2}, {"name": "Santana Row", "rank": 3}, {"name": "La Vic", "rank": 4}, {"name": "sushi place", "rank": 5}, {"name": "Cha Cha Sushi", "rank": 6}, {"name": "carne asada", "rank": 7}, {"name": "Pizza Antica", "rank": 8}, {"name": "dim sum", "rank": 9}, {"name": "ramen place", "rank": 10}]
+                }
+            }
         '''
 
         try:
@@ -184,6 +190,7 @@ def venue_home(request):
     else:
         context = 'Allowed only GET method'
         return HttpResponse(wrap_failure_json(context), status=405, content_type='application/json')
+
 
 @csrf_exempt
 def venue_keyword(request):

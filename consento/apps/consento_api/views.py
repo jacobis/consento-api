@@ -1,29 +1,30 @@
 # encoding: utf-8
 
 '''
-Created on Aug 26, 2014
+Updated on Apr 28, 2015
 
-@author: Ju Kyung Lee, Jacob Sungwoon Lee
+@author: Jacob Sungwoon Lee
 '''
 
 import ast
 import re
+import requests
 import json
 import logging
-import requests
+
 from bs4 import BeautifulSoup as bs
 
 from django.http import HttpResponse
 from django.views.decorators.csrf import csrf_exempt
 
-from libs.utils.beautifulsoup_wrapper import find_by_name
 from libs.utils.coordinate import coordinate_swapper
 from libs.utils.json_wrapper import wrap_success_json, wrap_failure_json
 
-from .models import Venue
+from .views_requests import *
 
 
 logger = logging.getLogger('api')
+
 
 @csrf_exempt
 def venue_search(request):
@@ -38,24 +39,115 @@ def venue_search(request):
             query: any query
 
             (e.g.) 
-            with Location :
-                curl -i -H "Accept: application/json" -X GET "http://localhost:8000/v1/venues/search?location=San+Jose,CA&query=pizza"
+            with Query:
+                with Location :
+                    curl -i -H "Accept: application/json" -X GET "http://localhost:8000/v1/venues/search?location=San%20Jose,%20CA&query=pizza"
+                with Coordinate :
+                    curl -i -H "Accept: application/json" -X GET "http://localhost:8000/v1/venues/search?latlng=37.756,-122.454,37.856,-122.354&query=pizza"
 
-            with Coordinate :
-                curl -i -H "Accept: application/json" -X GET "http://localhost:8000/v1/venues/search?latlng=37.756,-122.454,37.856,-122.354&location=San+Jose,CA&query=pizza"
+            without Query:
+                with Location :
+                    curl -i -H "Accept: application/json" -X GET "http://localhost:8000/v1/venues/search?location=San%20Jose,%20CA"
+                with Coordinate :
+                    curl -i -H "Accept: application/json" -X GET "http://localhost:8000/v1/venues/search?latlng=37.756,-122.454,37.856,-122.354"
 
         Return:
             Result data is following format:
             {"data": 
-                {"and_result": [{"category": "Restaurants", "name": "Maggiano\u2019s Little Italy", "object_id": "8273929", "doc_count": "50", "storecd": "2876", "address": "3055 Olin Ave San Jose, CA 95128", "location": "37.3208463,-121.9496176"}], 
-                "or_result": [{"category": "Restaurants", "name": "Maggiano\u2019s Little Italy", "object_id": "8273929", "doc_count": "483", "storecd": "2876", "address": "3055 Olin Ave San Jose, CA 95128", "location": "37.3208463,-121.9496176"}]
+                {"and_result": [{"category": "Cheese Shops", "pos_rate": 94.39449014731204, "positive_comments": 4934, "name": "The Cheese Board", "address": "1504 Shattuck Ave Berkeley, CA 94709, United States", "total_count": "7657", "negative_comments": 293, "object_id": "31483", "location": "37.8799415,-122.2693075"}], 
+                "or_result": [{"category": "Pizza", "pos_rate": 88.58851052768391, "positive_comments": 3408, "name": "800 Degrees Neapolitan Pizzeria", "address": "10889 Lindbrook Dr Los Angeles, CA 90024, United States", "total_count": "5693", "negative_comments": 439, "object_id": "163214", "location": "34.059930827289,-118.44431695965"}]
                 }
             }
         '''
 
         try:
-            url = 'http://ec2-54-183-94-75.us-west-1.compute.amazonaws.com/s'
-            params = {'ocat': 1, 'fl': '*', 't': 'lt'}
+            url = 'http://solrcloud0-320055289.us-west-1.elb.amazonaws.com/s'
+            params = {'ocat': 1, 't': 'o'}
+
+            try:
+                latlng = request.GET['latlng'].split(',')
+            except:
+                latlng = None
+
+            try:
+                location = request.GET['location']
+            except:
+                location = None
+
+            try:
+                query = request.GET['query']
+            except:
+                query = None
+
+            if latlng:
+                latlng = coordinate_swapper(latlng)
+                params['latlng'] = ",".join(str(ll) for ll in latlng)
+
+            if location:
+                params['locreg'] = location
+
+            if query:
+                params['q'] = query
+                params['t'] = 'lt'
+                
+            try:
+                # or_result
+                or_result = venue_search_request(url, params)
+
+                # and_result
+                queries = ''
+                for q in query.split(' '):
+                    queries += '+(%s) ' % q
+                params['q'] = queries
+                and_result = venue_search_request(url, params)
+
+                venue_list = {'and_result': and_result, 'or_result': or_result}
+
+            except:
+                venue_list = venue_search_request(url, params)
+
+            context = wrap_success_json(venue_list)
+            logger.info('Response JSON : %s' % context)
+
+            return HttpResponse(context, status=200, content_type='application/json')
+        
+        except requests.exceptions.Timeout as e:
+            context = "Error occurred during Connection with consento server"
+            return HttpResponse(wrap_failure_json(context), status=500, content_type='application/json')
+
+        except Exception as e:
+            context = "Exception Error"
+            logger.info('Error : %s' % e)
+            return HttpResponse(wrap_failure_json(context), status=500, content_type='application/json')
+
+    else:
+        context = 'Allowed only GET method'
+        return HttpResponse(wrap_failure_json(context), status=405, content_type='application/json')
+
+@csrf_exempt
+def venue_home(request):
+    if request.method == 'GET':
+        '''
+        Return recommended venue list ordered by consento rank-base.
+
+        Args:
+            vid: vender id (*)
+            location: city, state (* Need location or latlng)
+            latlng: latitude, longitude (* Need location or latlng)
+
+            (e.g.) 
+            with Location :
+                curl -i -H "Accept: application/json" -X GET "http://localhost:8000/v1/venues/home?location=San%20Jose,%20CA"
+            with Coordinate :
+                curl -i -H "Accept: application/json" -X GET "http://localhost:8000/v1/venues/home?latlng=37.756,-122.454,37.856,-122.354"
+
+        Return:
+            Result data is following format:
+        '''
+
+        try:
+            url = 'http://solrcloud0-320055289.us-west-1.elb.amazonaws.com/s'
+            params = {'ocat': 1, 't': 'o'}
 
             try:
                 latlng = request.GET['latlng'].split(',')
@@ -72,29 +164,14 @@ def venue_search(request):
                 params['latlng'] = ",".join(str(ll) for ll in latlng)
 
             if location:
-                params['location'] = location
+                params['locreg'] = location
 
-            try:
-                original_queries = request.GET['query']
-                params['q'] = original_queries
-                or_result = venue_search_request(url, params)
-                
-                queries = ''
-                for query in original_queries.split(' '):
-                    queries += '+(%s) ' % query
-                params['q'] = queries
-                and_result = venue_search_request(url, params)
-
-                venue_list = {'and_result': and_result, 'or_result': or_result}
-
-            except:
-                venue_list = venue_search_request(url, params)
-
-            context = wrap_success_json(venue_list)
+            result = venue_home_request(url, params)
+            context = wrap_success_json(result)
             logger.info('Response JSON : %s' % context)
 
             return HttpResponse(context, status=200, content_type='application/json')
-    
+
         except requests.exceptions.Timeout as e:
             context = "Error occurred during Connection with 9platters"
             return HttpResponse(wrap_failure_json(context), status=500, content_type='application/json')
@@ -107,47 +184,6 @@ def venue_search(request):
     else:
         context = 'Allowed only GET method'
         return HttpResponse(wrap_failure_json(context), status=405, content_type='application/json')
-
-@csrf_exempt
-def venue_home(request):
-    try:
-        url = 'http://ec2-54-183-94-75.us-west-1.compute.amazonaws.com/s'
-        params = {'ocat': 1, 'fl': '*', 't': 'lt'}
-
-        try:
-            latlng = request.GET['latlng'].split(',')
-        except:
-            latlng = None
-
-        try:
-            location = request.GET['location']
-        except:
-            location = None
-
-        if latlng:
-            latlng = coordinate_swapper(latlng)
-            params['latlng'] = ",".join(str(ll) for ll in latlng)
-
-        if location:
-            params['location'] = location
-
-        params['q'] = 'pizza'
-
-        result = venue_home_request(url, params)
-        context = wrap_success_json(result)
-        logger.info('Response JSON : %s' % context)
-
-        return HttpResponse(context, status=200, content_type='application/json')
-
-    except requests.exceptions.Timeout as e:
-        context = "Error occurred during Connection with 9platters"
-        return HttpResponse(wrap_failure_json(context), status=500, content_type='application/json')
-
-    except Exception as e:
-        context = "Exception Error"
-        logger.info('Error : %s' % e)
-        return HttpResponse(wrap_failure_json(context), status=500, content_type='application/json')
-
 
 @csrf_exempt
 def venue_keyword(request):
@@ -197,117 +233,7 @@ def venue_keyword(request):
         logger.info('Error : %s' % e)
         return HttpResponse(wrap_failure_json(context), status=500, content_type='application/json')
 
-
-def venue_search_request(url, params):
-    response = requests.get(url, params=params, timeout=5)
-    logger.info('GET url : %s' % response.url)
-    response.raise_for_status()
-
-    response = response.json()
-    response = response.get('response')
-
-    venue_list = []
-
-    doc_count = response.get('numFound')
-
-    for obj in response.get('docs'):
-        if doc_count == 1: continue
-        name = obj.get('pNames')[0]
-        address = obj.get('pAddresses')[0]
-        location = obj.get('pLatLong')
-        category = obj.get('pCategory')[0]
-        object_id = obj.get('pObjectID')
-        total_count = obj.get('pTotalComments')
-        positive_comments = obj.get('pPositiveComments')
-        negative_comments = obj.get('pNegativeComments')
-        try:
-            pos_rate = float(positive_comments) / float(positive_comments + negative_comments) * 100
-        except:
-            pos_rate = None
-        venue = {
-            'name': name,
-            'address': address,
-            'location': location,
-            'category': category,
-            'object_id': object_id,
-            'total_count': total_count,
-            'doc_count': str(doc_count),
-            'positive_comments': positive_comments,
-            'negative_comments': negative_comments,
-            'pos_rate': pos_rate
-        }
-        venue_list.append(venue)
-        
-    return venue_list
-
-
-def venue_home_request(url, params):
-    response = requests.get(url, params=params, timeout=5)
-    logger.info('GET url : %s' % response.url)
-    response.raise_for_status()
-
-    response = response.json()
-    top_keywords = response.get('TopKeywords')
-    response = response.get('response')
-
-    venue_list = []
-    keyword_list = []
-
-    for index, obj in enumerate(response.get('docs')):
-
-        address = obj.get('pAddresses')[0]
-        category = obj.get('pCategory')[0]
-        image = obj.get('image')
-        location = obj.get('pLatLong')
-        name = obj.get('pNames')[0]
-        object_id = obj.get('pObjectID')
-        rank = index + 1
-
-        try:
-            related_keyword = [tp['name'] for tp in obj.get('pTopPhrase')]
-        except:
-            related_keyword = []
-
-        venue = {
-            'address': address,
-            'category': category,
-            'image': image,
-            'location': location,
-            'name': name,
-            'object_id': object_id,
-            'rank': rank,
-            'related_keyword': related_keyword
-        }
-
-        venue_list.append(venue)
-
-    result = {'venue': venue_list, 'keyword': top_keywords}
-
-    return result
-
-
-def venue_keyword_request(url, params):
-    response = requests.get(url, params=params, timeout=5)
-    logger.info('GET url : %s' % response.url)
-    response.raise_for_status()
-
-    response = bs(response.content)
-
-    ontology = response.find('doc', {'name': 'Ontology'})
-    if params['q'] == 'good':
-        city_networks = ast.literal_eval(find_by_name(ontology, 'str', 'cityNetwork'))[:10]
-    else:
-        city_networks = ast.literal_eval(find_by_name(ontology, 'str', 'cityNetwork'))[:5]
-
-    keyword_list = []
-
-    for index, cn in enumerate(city_networks):
-        keyword = cn.get('name')
-        keyword_list.append({'rank': index+1, 'keyword': keyword})
-
-    return keyword_list
-
-
+@csrf_exempt
 def venue_detail(request, venue_id):
     try:
         object_id = "pObjectID:" + venue_id
@@ -436,14 +362,3 @@ def venue_detail(request, venue_id):
 def aspect_avg(aspect, total_doc, total_aspect=155150, total_segment=40063501):
     aspect_avg = (float(aspect) / float(total_doc)) / (float(total_aspect) / float(total_segment)) if aspect and total_doc else None
     return aspect_avg
-
-
-def image_finder(key):
-    image_objects = Venue.objects.filter(key=key, version="2014")
-    
-    if not image_objects:
-        image_objects = Venue.objects.filter(key=key, version="2014_additional")
-
-    images = [image_object.image_url for image_object in image_objects]
-
-    return images

@@ -106,24 +106,8 @@ def venue_home_request(url, params):
     return result
 
 
-def venue_keyword_request(url, params):
-    response = requests.get(url, params=params, timeout=5)
-    logger.info('GET url : %s' % response.url)
-    response.raise_for_status()
-
-    response = bs(response.content)
-
-    ontology = response.find('doc', {'name': 'Ontology'})
-    if params['q'] == 'good':
-        city_networks = ast.literal_eval(find_by_name(ontology, 'str', 'cityNetwork'))[:10]
-    else:
-        city_networks = ast.literal_eval(find_by_name(ontology, 'str', 'cityNetwork'))[:5]
-
-    keyword_list = []
-
-    for index, cn in enumerate(city_networks):
-        keyword = cn.get('name')
-        keyword_list.append({'rank': index+1, 'keyword': keyword})
+def venue_keyword_request():
+    keyword_list = None
 
     return keyword_list
 
@@ -191,8 +175,8 @@ def venue_detail_request(url, params):
         freq = profile.get('freq')
         profiles[name] = freq
 
-    gluten_free = None
-    gluten_free_avg = None
+    gluten_free = profiles.get('Gluten Free')
+    gluten_free_avg = aspect_avg(gluten_free, total_doc)
     gluten_free_related = None
     vegan = profiles.get('Vegan')
     vegan_avg = aspect_avg(vegan, total_doc)

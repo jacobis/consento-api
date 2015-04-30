@@ -195,37 +195,7 @@ def venue_home(request):
 @csrf_exempt
 def venue_keyword(request):
     try:
-        url = 'http://9platters.com/s'
-        params = {'t': 'l', 'dr': '24', 'wt': 'xml'}
-
-        try:
-            latlng = request.GET['latlng'].split(',')
-        except:
-            latlng = None
-        try:
-            location = request.GET['location'].split(',')
-        except:
-            location = None
-        try:
-            keyword = request.GET['keyword']
-        except:
-            keyword = 'good'
-
-        if latlng:
-            latlng = coordinate_swapper(latlng)
-            params['latmin'] = latlng[0]
-            params['lngmin'] = latlng[1]
-            params['latmax'] = latlng[2]
-            params['lngmax'] = latlng[3]
-
-        if location:
-            params['ocity'] = location[0]
-            params['ostate'] = location[1]
-
-        if keyword:
-            params['q'] = keyword
-
-        keyword_list = venue_keyword_request(url, params)
+        keyword_list = venue_keyword_request()
         context = wrap_success_json(keyword_list)
         logger.info('Response JSON : %s' % context)
 

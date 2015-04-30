@@ -242,115 +242,31 @@ def venue_keyword(request):
 
 @csrf_exempt
 def venue_detail(request, venue_id):
+    '''
+    Return specific venue information.
+
+    Args:
+        vid: vender id (*)
+        venue_id: venue id (*)
+
+        (e.g.) 
+        curl -i -H "Accept: application/json" -X GET "http://localhost:8000/v1/venues/62915"
+        
+    Return:
+        Result data is following format:
+        {"data": 
+            {"meta": {"category": "Nightlife", "phone_number": "415 474 5044", "yelp_id": "62915!metaDoc", "location": "37.806698,-122.42074", "address": "2765 Hyde Street at Beach Street San Francisco, CA, United States", "yelp_url": "http://www.yelp.com/biz/buena-vista-cafe-san-francisco", "name": "Buena Vista"}
+            }
+        }
+    '''
+
     try:
         object_id = "pObjectID:" + venue_id
 
-        url = 'http://ec2-54-183-94-75.us-west-1.compute.amazonaws.com/s'
-        params = {'q': object_id, 'fl': '*'}
+        url = 'http://solrcloud0-320055289.us-west-1.elb.amazonaws.com/s'
+        params = {'q': object_id}
 
-        response = requests.get(url, params=params, timeout=5)
-        logger.info('GET url : %s' % response.url)
-        response.raise_for_status()
-
-        response = response.json()
-        response = response.get('response')
-        response = response.get('docs')[0]
-
-        # Meta
-        name = response.get('pNames')[0]
-        category = response.get('pCategory')[0]
-        address = response.get('pAddresses')[0]
-        phone_number = response.get('pPhoneNumbers')[0]
-        yelp_id = response.get('id')
-        yelp_biz = response.get('pKey_yelp')[0] if response.get('pKey_yelp') else None
-        yelp_url = 'http://www.yelp.com/biz/' + yelp_biz if yelp_biz else None
-        location = response.get('pLatLong')
-        meta = {'name': name, 'category': category, 'address': address, 'phone_number': phone_number, 'yelp_id': yelp_id, 'yelp_url': yelp_url, 'location': location}
-
-        # Doc Count
-        doc_count = response.get('pTotalComments')
-        total_doc = doc_count
-
-        # Image
-        image = response.get('image')
-
-        # Keyword
-        keyword = {}
-        keyword_new = {}
-
-        # Overall
-        positive = response.get('pPositiveComments')
-        negative = response.get('pNegativeComments')
-        overall = {'positive': positive, 'negative': negative}
-
-        # Pref Relateds
-        pref_related = response.get('pPrefRelated')
-        pref_relateds = {}
-
-        if pref_related:
-            for pr in pref_related:
-                for pr in pr.values():
-                    for i in pr:
-                        pref_relateds.update(i)
-        
-        # Meal Type
-        breakfast = pref_relateds.get('Breakfast')
-        brunch = pref_relateds.get('Brunch')
-        lunch = pref_relateds.get('Lunch')
-        dinner = pref_relateds.get('Dinner')
-        dessert = pref_relateds.get('Dessert')
-        meal_type = {'breakfast': breakfast, 'brunch': brunch, 'lunch': lunch, 'dinner': dinner, 'dessert': dessert}
-
-        # Dietary & Venue Preference
-        gluten_free = None
-        gluten_free_avg = None
-        gluten_free_related = None
-        vegan = pref_relateds.get('Vegan')
-        vegan_avg = aspect_avg(vegan, total_doc)
-        vegan_related = None
-        vegetarian = pref_relateds.get('Vegetarian')
-        vegetarian_avg = aspect_avg(vegetarian, total_doc)
-        vegetarian_related = None
-        dietary = {
-            'gluten_free': gluten_free, 
-            'gluten_free_avg': gluten_free_avg,
-            'gluten_free_related': gluten_free_related,
-            'vegan': vegan, 
-            'vegan_avg': vegan_avg,
-            'vegan_related': vegan_related,
-            'vegetarian': vegetarian,
-            'vegetarian_avg': vegetarian_avg,
-            'vegetarian_related': vegetarian_related
-        }
-
-        family = pref_relateds.get('Family')
-        family_avg = aspect_avg(family, total_doc)
-        family_related = None
-        noise = pref_relateds.get('Noise')
-        noise_avg = aspect_avg(noise, total_doc)
-        noise_related = None
-        view = pref_relateds.get('View')
-        view_avg = aspect_avg(view, total_doc)
-        view_related = None
-        wait = pref_relateds.get('Waiting')
-        wait_avg = aspect_avg(wait, total_doc)
-        wait_related = None
-        venue_preference = {
-            'family': family, 
-            'family_avg': family_avg,
-            'family_related': family_related,
-            'noise': noise, 
-            'noise_avg': noise_avg,
-            'noise_related': noise_related,
-            'view': view, 
-            'view_avg': view_avg,
-            'view_related': view_related,
-            'wait': wait,
-            'wait_avg': wait_avg,
-            'wait_related': wait_related
-        }
-
-        venue = {'meta': meta, 'doc_count': doc_count, 'overall': overall, 'image': image, 'keyword': keyword, 'keyword_new': keyword_new, 'meal_type': meal_type, 'dietary': dietary, 'venue_preference': venue_preference}
+        venue = venue_detail_request(url, params)
 
         context = wrap_success_json(venue)
 
@@ -364,8 +280,3 @@ def venue_detail(request, venue_id):
         context = "Exception Error"
         logger.info('Error : %s' % e)
         return HttpResponse(wrap_failure_json(context), status=500, content_type='application/json')
-
-
-def aspect_avg(aspect, total_doc, total_aspect=155150, total_segment=40063501):
-    aspect_avg = (float(aspect) / float(total_doc)) / (float(total_aspect) / float(total_segment)) if aspect and total_doc else None
-    return aspect_avg

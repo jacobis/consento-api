@@ -1,8 +1,8 @@
 ## Venue Detail
 
-Production Server : http://54.183.205.145/v1/**venues/object_id**
+Production Server : http://54.183.205.145/v1/venues/object_id
 
-Test Server : http://54.153.93.204:9999/v1/**venues/object_id**
+Test Server : http://54.153.93.204:9999/v1/venues/object_id
 
 해당 Venue에 대한 상세한 정보를 돌려줍니다. 여기에는 Venue의 Meta정보, 각 요소들의 수치화된 정보들이 담겨있습니다.
 
@@ -42,15 +42,15 @@ Field | Description | Response Status
 
 **Test Server**
 
-[**Try It Out**](54.153.93.204:9999/v1/venues/153701)
+[**Try It Out**](http://54.153.93.204:9999/v1/venues/153701)
 
 
 
 ## Search Venues
 
-Production Server : http://54.183.205.145/v1/**venues/search**
+Production Server : http://54.183.205.145/v1/venues/search
 
-Test Server : http://54.153.93.204:9999/v1/**venues/search**
+Test Server : http://54.153.93.204:9999/v1/venues/search
 
 
 특정 지역 또는 특정 영역의 두 좌표 값(좌측 상단, 우측 하단) 내의 Venue 리스트를 돌려줍니다. Search Query는 Optional 입니다.
@@ -109,9 +109,9 @@ Using Location : [**Try It Out**](http://54.153.93.204:9999/v1/venues/search?loc
 
 ## Home
 
-Production Server : http://54.183.205.145/v1/venues/**home**
+Production Server : http://54.183.205.145/v1/venues/home
 
-Test Server : http://54.153.93.204:9999/v1/venues/**home**
+Test Server : http://54.153.93.204:9999/v1/venues/home
 
 
 특정 지역 또는 특정 영역의 두 좌표 값(좌측 상단, 우측 하단) 기준으로 주요 키워드와 추천 Venue 리스트를 돌려줍니다.

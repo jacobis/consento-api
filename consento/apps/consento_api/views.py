@@ -193,7 +193,36 @@ def venue_home(request):
 @csrf_exempt
 def venue_keyword(request):
     try:
-        keyword_list = venue_keyword_request()
+        url = 'http://solrcloud0-320055289.us-west-1.elb.amazonaws.com/s'
+        params = {'ocat': 1, 't': 'o'}
+
+        try:
+            latlng = request.GET['latlng'].split(',')
+        except:
+            latlng = None
+
+        try:
+            location = request.GET['location']
+        except:
+            location = None
+
+        try:
+            query = request.GET['keyword']
+        except:
+            query = None
+
+        if latlng:
+            latlng = coordinate_swapper(latlng)
+            params['latlng'] = ",".join(str(ll) for ll in latlng)
+
+        if location:
+            params['locreg'] = location
+
+        if query:
+            params['q'] = query
+            params['t'] = 'lt'
+
+        keyword_list = venue_keyword_request(url, params)
         context = wrap_success_json(keyword_list)
         logger.info('Response JSON : %s' % context)
 

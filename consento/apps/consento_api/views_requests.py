@@ -106,8 +106,23 @@ def venue_home_request(url, params):
     return result
 
 
-def venue_keyword_request():
-    keyword_list = None
+def venue_keyword_request(url, params):
+    response = requests.get(url, params=params, timeout=5)
+    logger.info('GET url : %s' % response.url)
+    response.raise_for_status()
+
+    response = response.json()
+    top_keywords = response.get('TopKeywords')
+
+    keyword_list = []
+
+    for index, top_keyword in enumerate(top_keywords.get('RESTAURANT')):
+        keyword = {
+            'name': top_keyword[0],
+            'rank': index + 1
+        }
+
+        keyword_list.append(keyword)
 
     return keyword_list
 

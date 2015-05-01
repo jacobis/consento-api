@@ -98,7 +98,7 @@ Field | Description | Response Status
 
 Using Latitude & Longitude : [**Try It Out**](http://54.183.205.145/v1/venues/search?latlng=37.7577,-122.4376,37.856,-122.354)
 
-Using Location : [**Try It Out**](http://54.183.205.145/v1/venues/search?location=San+Jose,CA)
+Using Location : [**Try It Out**](http://54.183.205.145/v1/venues/search?location=San+Jose,%20CA)
 
 **Test Server**
 
@@ -145,7 +145,7 @@ Field | Description | Response Status
 
 Using Latitude & Longitude : [**Try It Out**](http://54.183.205.145/v1/venues/home?latlng=37.7577,-122.4376,37.7688,-122.4487)
 
-Using Location : [**Try It Out**](http://54.183.205.145/v1/venues/home?location=San+Jose,CA)
+Using Location : [**Try It Out**](http://54.183.205.145/v1/venues/home?location=San+Jose,%20CA)
 
 **Test Server**
 
@@ -189,7 +189,7 @@ Field | Description | Response Status
 
 Using Latitude & Longitude : [**Try It Out**](http://54.183.205.145/v1/venues/recommended_keyword?latlng=37.7577,-122.4376,37.7688,-122.4487)
 
-Using Location : [**Try It Out**](http://54.183.205.145/v1/venues/recommended_keyword?location=San+Jose,CA)
+Using Location : [**Try It Out**](http://54.183.205.145/v1/venues/recommended_keyword?location=San+Jose,%20CA)
 
 **Test Server**
 
@@ -235,7 +235,7 @@ Field | Description | Response Status
 
 Using Latitude & Longitude : [**Try It Out**](http://54.183.205.145/v1/venues/related_keyword?keyword=spicy&latlng=37.7577,-122.4376,37.7688,-122.4487&keyword=noodle)
 
-Using Location : [**Try It Out**](http://54.183.205.145/v1/venues/related_keyword?keyword=spicy&location=San+Jose,CA&keyword=noodle)
+Using Location : [**Try It Out**](http://54.183.205.145/v1/venues/related_keyword?keyword=spicy&location=San+Jose,%20CA&keyword=noodle)
 
 **Test Server**
 

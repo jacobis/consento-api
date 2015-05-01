@@ -12,8 +12,6 @@ import requests
 import json
 import logging
 
-from bs4 import BeautifulSoup as bs
-
 from django.http import HttpResponse
 from django.views.decorators.csrf import csrf_exempt
 

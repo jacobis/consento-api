@@ -157,6 +157,7 @@ def venue_detail_request(url, params):
 
     # Pref Relateds
     pref_related = response.get('pPrefRelated')
+    gluten_free_list = pref_related.get('Gluten_Free')
     meal_type_list = pref_related.get('MealType')
     profile_list = pref_related.get('Profile')
     purpose_list = pref_related.get('Purpose')
@@ -175,6 +176,18 @@ def venue_detail_request(url, params):
         freq = profile.get('freq')
         profiles[name] = freq
 
+    for gluten_free in gluten_free_list:
+        name = gluten_free.get('name')
+        freq = profile.get('freq')
+        profiles[name] = freq
+
+    # purposes
+    purposes = {}
+    for purpose in purpose_list:
+        name = purpose.get('name')
+        freq = purpose.get('freq')
+        purposes[name] = freq
+
     gluten_free = profiles.get('Gluten Free')
     gluten_free_avg = aspect_avg(gluten_free, total_doc)
     gluten_free_related = None
@@ -184,7 +197,7 @@ def venue_detail_request(url, params):
     vegetarian = profiles.get('Vegetarian')
     vegetarian_avg = aspect_avg(vegetarian, total_doc)
     vegetarian_related = None
-    profiles = {
+    dietary = {
         'gluten_free': gluten_free, 
         'gluten_free_avg': gluten_free_avg,
         'gluten_free_related': gluten_free_related,
@@ -196,32 +209,43 @@ def venue_detail_request(url, params):
         'vegetarian_related': vegetarian_related
     }
 
-    # purposes
-    purposes = {}
-    for purpose in purpose_list:
-        name = purpose.get('name')
-        freq = purpose.get('freq')
-        purposes[name] = freq
-
+    dating = purposes.get('Dating')
+    dating_avg = aspect_avg(dating, total_doc)
+    dating_related = None
     family = purposes.get('Family')
     family_avg = aspect_avg(family, total_doc)
     family_related = None
-    noise = purposes.get('Noise')
+    friend = purposes.get('Friend')
+    friend_avg = aspect_avg(friend, total_doc)
+    friend_related = None
+    noise = profiles.get('Noise')
     noise_avg = aspect_avg(noise, total_doc)
     noise_related = None
-    view = purposes.get('View')
+    parking = profiles.get('Parking')
+    parking_avg = aspect_avg(parking, total_doc)
+    parking_related = None
+    view = profiles.get('View')
     view_avg = aspect_avg(view, total_doc)
     view_related = None
-    wait = purposes.get('Waiting')
+    wait = profiles.get('Waiting')
     wait_avg = aspect_avg(wait, total_doc)
     wait_related = None
-    purposes = {
+    venue_preference = {
+        'dating': dating,
+        'dating_avg': dating_avg,
+        'dating_related': dating_related,
         'family': family, 
         'family_avg': family_avg,
         'family_related': family_related,
+        'friend': friend, 
+        'friend_avg': friend_avg,
+        'friend_related': friend_related,
         'noise': noise, 
         'noise_avg': noise_avg,
         'noise_related': noise_related,
+        'parking': parking,
+        'parking_avg': parking_avg,
+        'parking_related': parking_related,
         'view': view, 
         'view_avg': view_avg,
         'view_related': view_related,
@@ -230,7 +254,7 @@ def venue_detail_request(url, params):
         'wait_related': wait_related
     }
 
-    venue = {'meta': meta, 'doc_count': doc_count, 'overall': overall, 'image': image, 'keyword': keyword, 'keyword_new': keyword_new, 'meal_type': meal_types, 'dietary': profiles, 'venue_preference': purposes}
+    venue = {'meta': meta, 'doc_count': doc_count, 'overall': overall, 'image': image, 'keyword': keyword, 'keyword_new': keyword_new, 'meal_type': meal_types, 'dietary': dietary, 'venue_preference': venue_preference}
 
     return venue
 

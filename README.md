@@ -89,8 +89,8 @@ Field | Description | Response Status
 **category** | A category that have been applied to this venue. | ✓
 **total_count** | Total count of reviews this venue. | ✓
 **doc_count** | Doc count. | ✓
-**pos_comments** | Positive Comments. | ✓
-**neg_comments** | Negative Comments. | ✓
+**positive_comments** | Positive Comments. | ✓
+**negative_comments** | Negative Comments. | ✓
 **pos_rate** | Positive Rate. | ✓
 
 
@@ -109,9 +109,9 @@ Using Location : [**Try It Out**](http://54.153.93.204:9999/v1/venues/search?loc
 
 ## Home
 
-Production Server : http://54.183.205.145/v1/venues/home
+Production Server : http://54.183.205.145/v1/venues/**home**
 
-Test Server : http://54.153.93.204:9999/v1/venues/home
+Test Server : http://54.153.93.204:9999/v1/venues/**home**
 
 
 특정 지역 또는 특정 영역의 두 좌표 값(좌측 상단, 우측 하단) 기준으로 주요 키워드와 추천 Venue 리스트를 돌려줍니다.

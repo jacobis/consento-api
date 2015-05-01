@@ -24,6 +24,7 @@ def venue_search_request(url, params):
 
     venue_list = []
 
+
     for doc in response.get('docs'):
         object_id = doc.get('pObjectID')
         name = doc.get('pNames')[0]
@@ -31,6 +32,7 @@ def venue_search_request(url, params):
         location = doc.get('pLatLong')
         category = doc.get('type')
         total_count = doc.get('pTotalComments')
+        doc_count = doc.get('numFoundSeg')
         positive_comments = doc.get('pPositiveComments')
         negative_comments = doc.get('pNegativeComments')
         pos_rate = None
@@ -45,6 +47,7 @@ def venue_search_request(url, params):
             'location': location,
             'category': category,
             'total_count': total_count,
+            'doc_count': doc_count,
             'positive_comments': positive_comments,
             'negative_comments': negative_comments,
             'pos_rate': pos_rate

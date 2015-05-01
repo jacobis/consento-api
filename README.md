@@ -143,20 +143,21 @@ Field | Description | Response Status
 
 **Production Server**
 
-Using Latitude & Longitude : [**Try It Out**](http://54.183.205.145/v1/venues/home?latlng=37.7577,-122.4376,37.7688,-122.4487&location=San+Francisco,CA)
+Using Latitude & Longitude : [**Try It Out**](http://54.183.205.145/v1/venues/home?latlng=37.7577,-122.4376,37.7688,-122.4487)
 
 Using Location : [**Try It Out**](http://54.183.205.145/v1/venues/home?location=San+Jose,CA)
 
 **Test Server**
 
-Using Latitude & Longitude : [**Try It Out**](http://54.153.93.204:9999/v1/venues/home?latlng=37.7577,-122.4376,37.7688,-122.4487&location=San+Francisco,CA)
+Using Latitude & Longitude : [**Try It Out**](http://54.153.93.204:9999/v1/venues/home?latlng=37.7577,-122.4376,37.7688,-122.4487)
 
 Using Location : [**Try It Out**](http://54.153.93.204:9999/v1/venues/home?location=San+Jose,%20CA)
 
 ## Recommended Keyword
 
-http://54.183.205.145/v1/venues/recommended_keyword
+Production Server : http://54.183.205.145/v1/venues/recommended_keyword
 
+Test Server : http://54.153.93.204:9999/v1/venues/recommended_keyword
 
 특정 지역 또는 특정 영역의 두 좌표 값(좌측 상단, 우측 하단) 기준으로 추천 키워드를 돌려줍니다.
 
@@ -184,16 +185,24 @@ Field | Description | Response Status
 **keyword** | *rank*, *keyword* | ✓
 
 
-Using Latitude & Longitude : [**Try It Out**](http://54.183.205.145/v1/venues/recommended_keyword?latlng=37.7577,-122.4376,37.7688,-122.4487&location=San+Francisco,CA)
+**Production Server**
+
+Using Latitude & Longitude : [**Try It Out**](http://54.183.205.145/v1/venues/recommended_keyword?latlng=37.7577,-122.4376,37.7688,-122.4487)
 
 Using Location : [**Try It Out**](http://54.183.205.145/v1/venues/recommended_keyword?location=San+Jose,CA)
 
+**Test Server**
+
+Using Latitude & Longitude : [**Try It Out**](http://54.153.93.204:9999/v1/venues/recommended_keyword?latlng=37.7577,-122.4376,37.7688,-122.4487)
+
+Using Location : [**Try It Out**](http://54.153.93.204:9999/v1/venues/recommended_keyword?location=San+Jose,%20CA)
 
 
 ## Related Keyword
 
-http://54.183.205.145/v1/venues/related_keyword
+Production Server : http://54.183.205.145/v1/venues/related_keyword
 
+Test Server : http://54.153.93.204:9999/v1/venues/related_keyword
 
 특정 키워드를 입력하면, 지역 또는 영역의 두 좌표 값(좌측 상단, 우측 하단) 기준으로 관련 키워드를 돌려줍니다.
 
@@ -222,6 +231,14 @@ Field | Description | Response Status
 **keyword** | *rank*, *keyword* | ✓
 
 
-Using Latitude & Longitude : [**Try It Out**](http://54.183.205.145/v1/venues/related_keyword?keyword=spicy&latlng=37.7577,-122.4376,37.7688,-122.4487&location=San+Francisco,CA)
+**Production Server**
 
-Using Location : [**Try It Out**](http://54.183.205.145/v1/venues/related_keyword?keyword=spicy&location=San+Jose,CA)
+Using Latitude & Longitude : [**Try It Out**](http://54.183.205.145/v1/venues/related_keyword?keyword=spicy&latlng=37.7577,-122.4376,37.7688,-122.4487&keyword=noodle)
+
+Using Location : [**Try It Out**](http://54.183.205.145/v1/venues/related_keyword?keyword=spicy&location=San+Jose,CA&keyword=noodle)
+
+**Test Server**
+
+Using Latitude & Longitude : [**Try It Out**](http://54.153.93.204:9999/v1/venues/related_keyword?keyword=spicy&latlng=37.7577,-122.4376,37.7688,-122.4487&keyword=noodle)
+
+Using Location : [**Try It Out**](http://54.153.93.204:9999/v1/venues/related_keyword?keyword=spicy&location=San+Jose,%20CA&keyword=noodle)

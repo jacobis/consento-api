@@ -163,7 +163,7 @@ def venue_detail_request(url, params):
 
     # Keyword
     try:
-        keyword = [{'name':tp['name'], 'rank':tp['rank'], 'count':tp['Human']} for tp in response.get('pTopPhrase')]
+        keyword = [{'name':tp['name'], 'rank':tp['rank'], 'count':tp['Human'], 'related':None} for tp in response.get('pTopPhrase')]
     except:
         keyword = None
 

@@ -109,9 +109,9 @@ Using Location : [**Try It Out**](http://54.153.93.204:9999/v1/venues/search?loc
 
 ## Home
 
-Production Server : http://54.183.205.145/v1/venues/**home**
+Production Server : http://54.183.205.145/v1/venues/home
 
-Test Server : http://54.153.93.204:9999/v1/venues/**home**
+Test Server : http://54.153.93.204:9999/v1/venues/home
 
 
 특정 지역 또는 특정 영역의 두 좌표 값(좌측 상단, 우측 하단) 기준으로 주요 키워드와 추천 Venue 리스트를 돌려줍니다.
@@ -138,7 +138,7 @@ Parameter | Example | Description
 Field | Description | Response Status
 ------| ----- | -----
 **keyword** | *rank*, *keyword*, *related* | ✓
-**venue** | *name*, *category*, *address*, *keyword*, *image* | ✓
+**venue** | *name*, *category*, *address*, *related_keyword*, *image* | ✓
 
 
 **Production Server**

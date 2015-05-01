@@ -162,8 +162,10 @@ def venue_detail_request(url, params):
     image = response.get('image')
 
     # Keyword
-    keyword = None
-    keyword_new = None
+    try:
+        keyword = [{'name':tp['name'], 'rank':tp['rank'], 'count':tp['Human']} for tp in response.get('pTopPhrase')]
+    except:
+        keyword = None
 
     # Overall
     positive = response.get('pPositiveComments')
@@ -269,7 +271,7 @@ def venue_detail_request(url, params):
         'wait_related': wait_related
     }
 
-    venue = {'meta': meta, 'doc_count': doc_count, 'overall': overall, 'image': image, 'keyword': keyword, 'keyword_new': keyword_new, 'meal_type': meal_types, 'dietary': dietary, 'venue_preference': venue_preference}
+    venue = {'meta': meta, 'doc_count': doc_count, 'overall': overall, 'image': image, 'keyword': keyword, 'meal_type': meal_types, 'dietary': dietary, 'venue_preference': venue_preference}
 
     return venue
 

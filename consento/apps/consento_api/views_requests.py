@@ -29,7 +29,7 @@ def venue_search_request(url, params):
         name = doc.get('pNames')[0]
         address = doc.get('pAddresses')[0]
         location = doc.get('pLatLong')
-        category = doc.get('pCategory')[0]
+        category = doc.get('type')
         total_count = doc.get('pTotalComments')
         positive_comments = doc.get('pPositiveComments')
         negative_comments = doc.get('pNegativeComments')
@@ -71,7 +71,7 @@ def venue_home_request(url, params):
         name = obj.get('pNames')[0]
         address = obj.get('pAddresses')[0]
         location = obj.get('pLatLong')
-        category = obj.get('pCategory')[0]
+        category = obj.get('type')
         image = obj.get('image')
         rank = index + 1
 
@@ -138,7 +138,7 @@ def venue_detail_request(url, params):
 
     # Meta
     name = response.get('pNames')[0]
-    category = response.get('pCategory')[0]
+    category = response.get('category')[0]
     address = response.get('pAddresses')[0]
     location = response.get('pLatLong')
     phone_number = response.get('pPhoneNumbers')[0]

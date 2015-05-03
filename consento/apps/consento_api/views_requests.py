@@ -98,8 +98,9 @@ def venue_home_request(url, params):
 
     for index, top_keyword in enumerate(top_keywords.get('RESTAURANT')):
         keyword = {
-            'name': top_keyword[0],
-            'rank': index + 1
+            'keyword': top_keyword[0],
+            'rank': index + 1,
+            'related': None
         }
 
         keyword_list.append(keyword)

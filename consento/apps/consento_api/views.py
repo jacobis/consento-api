@@ -105,7 +105,7 @@ def venue_search(request):
                 venue_list = venue_search_request(url, params)
 
             context = wrap_success_json(venue_list)
-            logger.info('Response JSON : %s' % context)
+            logger.info('Response JSON - Venue Search : %s' % context)
 
             return HttpResponse(context, status=200, content_type='application/json')
         
@@ -172,7 +172,7 @@ def venue_home(request):
 
             result = venue_home_request(url, params)
             context = wrap_success_json(result)
-            logger.info('Response JSON : %s' % context)
+            logger.info('Response JSON - Home : %s' % context)
 
             return HttpResponse(context, status=200, content_type='application/json')
 
@@ -224,7 +224,7 @@ def venue_keyword(request):
 
         keyword_list = venue_keyword_request(url, params)
         context = wrap_success_json(keyword_list)
-        logger.info('Response JSON : %s' % context)
+        logger.info('Response JSON - Keyword : %s' % context)
 
         return HttpResponse(context, status=200, content_type='application/json')
 
@@ -266,6 +266,7 @@ def venue_detail(request, venue_id):
         venue = venue_detail_request(url, params)
 
         context = wrap_success_json(venue)
+        logger.info('Response JSON - Detail : %s' % context)
 
         return HttpResponse(context, status=200, content_type='application/json')
 

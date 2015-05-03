@@ -36,6 +36,7 @@ def venue_search_request(url, params):
         positive_comments = doc.get('pPositiveComments')
         negative_comments = doc.get('pNegativeComments')
         pos_rate = None
+        storecd = None #Dummy for error
 
         if positive_comments and negative_comments:
             pos_rate = float(positive_comments) / float(positive_comments + negative_comments) * 100
@@ -50,7 +51,8 @@ def venue_search_request(url, params):
             'doc_count': doc_count,
             'positive_comments': positive_comments,
             'negative_comments': negative_comments,
-            'pos_rate': pos_rate
+            'pos_rate': pos_rate,
+            'storecd': storecd #Dummy for error
         }
         venue_list.append(venue)
         
@@ -100,7 +102,7 @@ def venue_home_request(url, params):
         keyword = {
             'keyword': top_keyword[0],
             'rank': index + 1,
-            'related': None
+            'related': "Null" #Dummy for error
         }
 
         keyword_list.append(keyword)
@@ -122,7 +124,7 @@ def venue_keyword_request(url, params):
 
     for index, top_keyword in enumerate(top_keywords.get('RESTAURANT')):
         keyword = {
-            'name': top_keyword[0],
+            'keyword': top_keyword[0],
             'rank': index + 1
         }
 

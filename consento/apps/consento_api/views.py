@@ -264,6 +264,7 @@ def venue_detail(request, venue_id):
         params = {'q': object_id}
 
         venue = venue_detail_request(url, params)
+        venue = {'data': venue}
 
         context = wrap_success_json(venue)
         logger.info('Response JSON - Detail : %s' % context)

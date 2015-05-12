@@ -161,7 +161,7 @@ def venue_detail_request(url, params):
     meta = {'name': name, 'category': category, 'address': address, 'location': location, 'phone_number': phone_number, 'yelp_id': yelp_id, 'yelp_url': yelp_url}
 
     # Doc Count
-    doc_count = response.get('pTotalComments')
+    doc_count = response.get('pTotalSegNum')
     total_doc = doc_count
 
     # Image
@@ -201,7 +201,7 @@ def venue_detail_request(url, params):
 
     for gluten_free in gluten_free_list:
         name = gluten_free.get('name')
-        freq = profile.get('freq')
+        freq = gluten_free.get('freq')
         profiles[name] = freq
 
     # purposes
@@ -277,7 +277,7 @@ def venue_detail_request(url, params):
         'wait_related': wait_related
     }
 
-    venue = {'meta': meta, 'doc_count': doc_count, 'overall': overall, 'image': image, 'keyword': keyword, 'meal_type': meal_types, 'dietary': dietary, 'venue_preference': venue_preference}
+    venue = {'meta': meta, 'doc_count': {'total_doc': doc_count}, 'overall': overall, 'image': image, 'keyword': keyword, 'meal_type': meal_types, 'dietary': dietary, 'venue_preference': venue_preference}
 
     return venue
 

@@ -77,8 +77,9 @@ def venue_home_request(url, params):
         address = obj.get('pAddresses')[0]
         location = obj.get('pLatLong')
         category = obj.get('type')
-        image = obj.get('image')
         rank = index + 1
+        yelp_bizs = response.get('pKey_yelp')
+        image = get_image(yelp_bizs) if yelp_bizs else None
 
         try:
             related_keyword = [tp['name'] for tp in obj.get('pTopPhrase')]
@@ -152,20 +153,18 @@ def venue_detail_request(url, params):
     yelp_bizs = response.get('pKey_yelp')
     yelp_biz = None
     yelp_url = None
+    image = None
 
     if yelp_bizs:
         yelp_biz = yelp_bizs[0]
         yelp_url = 'http://www.yelp.com/biz/' + yelp_biz
-
+        image = get_image(yelp_bizs)
 
     meta = {'name': name, 'category': category, 'address': address, 'location': location, 'phone_number': phone_number, 'yelp_id': yelp_id, 'yelp_url': yelp_url}
 
     # Doc Count
     doc_count = response.get('pTotalSegNum')
     total_doc = doc_count
-
-    # Image
-    image = response.get('image')
 
     # Keyword
     try:
@@ -285,3 +284,16 @@ def venue_detail_request(url, params):
 def aspect_avg(aspect, total_doc, total_aspect=155150, total_segment=40063501):
     aspect_avg = (float(aspect) / float(total_doc)) / (float(total_aspect) / float(total_segment)) if aspect and total_doc else None
     return aspect_avg
+
+
+def get_image(key):
+    url = 'http://popoplocal.com/image/getList/' + ','.join(key)
+    response = requests.get(url, timeout=5)
+    response.raise_for_status()
+
+    response = response.json()
+
+    thumbnails = response[0].get('thumbnails')
+    thumbnail = thumbnails[0] if thumbnails else None
+
+    return thumbnail

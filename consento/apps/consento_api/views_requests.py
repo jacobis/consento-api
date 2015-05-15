@@ -78,7 +78,7 @@ def venue_home_request(url, params):
         location = obj.get('pLatLong')
         category = obj.get('type')
         rank = index + 1
-        yelp_bizs = response.get('pKey_yelp')
+        yelp_bizs = obj.get('pKey_yelp')
         image = get_image(yelp_bizs) if yelp_bizs else None
 
         try:

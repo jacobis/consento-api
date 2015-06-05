@@ -13,6 +13,8 @@ import logging
 from django.http import HttpResponse
 from django.core.cache import cache
 
+from libs.utils.json_wrapper import wrap_failure_json
+
 
 logger = logging.getLogger('api')
 

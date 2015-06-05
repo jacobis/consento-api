@@ -103,7 +103,7 @@ def venue_home_request(url, params):
         keyword = {
             'keyword': top_keyword[0],
             'rank': index + 1,
-            'related': "Null" #Dummy for error
+            'related': get_keyword_related(top_keyword[0])
         }
 
         keyword_list.append(keyword)
@@ -297,3 +297,32 @@ def get_image(key):
     thumbnail = thumbnails[0] if thumbnails else None
 
     return thumbnail
+
+
+def get_keyword_related(keyword):
+    url = 'http://solrcloud0-320055289.us-west-1.elb.amazonaws.com/s'
+    params = {'ocat': 1, 't': 'lt'}
+
+    location = 'San Francisco, CA'
+    query = keyword
+
+    params['locreg'] = location
+    params['q'] = query
+
+    try:
+        response = requests.get(url, params=params, timeout=5)
+        logger.info('GET url : %s' % response.url)
+        response.raise_for_status()
+
+    except requests.exceptions.Timeout as e:
+        context = "Error occurred during Connection with consento server"
+        return HttpResponse(wrap_failure_json(context), status=500, content_type='application/json')
+    try:
+        response = response.json()
+        top_keywords = response.get('TopKeywords').get('RESTAURANT')
+
+        top_keywords = '\t'.join(top_keyword[0] for top_keyword in top_keywords)
+    except:
+        top_keywords = None
+    
+    return top_keywords

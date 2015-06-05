@@ -321,14 +321,10 @@ def get_keyword_related(keyword):
         top_keywords = cached_keywords
     
     else:
-        try:
-            response = requests.get(url, params=params, timeout=5)
-            logger.info('GET url : %s' % response.url)
-            response.raise_for_status()
+        response = requests.get(url, params=params, timeout=10)
+        logger.info('GET url : %s' % response.url)
+        response.raise_for_status()
 
-        except requests.exceptions.Timeout as e:
-            context = "Error occurred during Connection with consento server"
-            return HttpResponse(wrap_failure_json(context), status=500, content_type='application/json')
         try:
             response = response.json()
             top_keywords = response.get('TopKeywords').get('RESTAURANT')

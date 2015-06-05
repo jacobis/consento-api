@@ -10,6 +10,8 @@ import ast
 import requests
 import logging
 
+from django.core.cache import cache
+
 
 logger = logging.getLogger('api')
 
@@ -309,20 +311,29 @@ def get_keyword_related(keyword):
     params['locreg'] = location
     params['q'] = query
 
-    try:
-        response = requests.get(url, params=params, timeout=5)
-        logger.info('GET url : %s' % response.url)
-        response.raise_for_status()
+    query = query.replace(' ', '_')
+    cached_keywords = cache.get(query)
 
-    except requests.exceptions.Timeout as e:
-        context = "Error occurred during Connection with consento server"
-        return HttpResponse(wrap_failure_json(context), status=500, content_type='application/json')
-    try:
-        response = response.json()
-        top_keywords = response.get('TopKeywords').get('RESTAURANT')
+    if cached_keywords:
+        top_keywords = cached_keywords
+    
+    else:
+        try:
+            response = requests.get(url, params=params, timeout=5)
+            logger.info('GET url : %s' % response.url)
+            response.raise_for_status()
 
-        top_keywords = '\t'.join(top_keyword[0] for top_keyword in top_keywords)
-    except:
-        top_keywords = None
+        except requests.exceptions.Timeout as e:
+            context = "Error occurred during Connection with consento server"
+            return HttpResponse(wrap_failure_json(context), status=500, content_type='application/json')
+        try:
+            response = response.json()
+            top_keywords = response.get('TopKeywords').get('RESTAURANT')
+
+            top_keywords = '\t'.join(top_keyword[0] for top_keyword in top_keywords)
+
+            cache.set(query, top_keywords)
+        except:
+            top_keywords = None
     
     return top_keywords

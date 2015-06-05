@@ -10,6 +10,7 @@ import ast
 import requests
 import logging
 
+from django.http import HttpResponse
 from django.core.cache import cache
 
 

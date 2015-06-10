@@ -245,7 +245,7 @@ def venue_detail_request(url, params):
     # dating_related = get_keyword_related('Dating', yelp_id)
     family = purposes.get('Family')
     family_avg = aspect_avg(family, total_doc)
-    dating_related = None
+    family_related = None
     # family_related = get_keyword_related('Family', yelp_id)
     friend = purposes.get('Friend')
     friend_avg = aspect_avg(friend, total_doc)

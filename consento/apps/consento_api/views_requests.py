@@ -41,6 +41,7 @@ def venue_search_request(url, params):
         positive_comments = doc.get('pPositiveComments')
         positive_comments = doc.get('pSentiSegNum') if not positive_comments else positive_comments
         negative_comments = doc.get('pNegativeComments')
+        negative_comments = total_count - positive_comments if not negative_comments else negative_comments
         pos_rate = None
         storecd = None #Dummy for error
 
@@ -53,10 +54,10 @@ def venue_search_request(url, params):
             'address': address,
             'location': location,
             'category': category,
-            'total_count': total_count,
+            'total_count': str(total_count),
             'doc_count': doc_count,
-            'positive_comments': positive_comments,
-            'negative_comments': negative_comments,
+            'positive_comments': str(positive_comments),
+            'negative_comments': str(negative_comments),
             'pos_rate': pos_rate,
             'storecd': storecd #Dummy for error
         }

@@ -217,13 +217,16 @@ def venue_detail_request(url, params):
 
     gluten_free = profiles.get('Gluten Free')
     gluten_free_avg = aspect_avg(gluten_free, total_doc)
-    gluten_free_related = get_keyword_related('Gluten Free', yelp_id)
+    gluten_free_related = None
+    # gluten_free_related = get_keyword_related('Gluten Free', yelp_id)
     vegan = profiles.get('Vegan')
     vegan_avg = aspect_avg(vegan, total_doc)
-    vegan_related = get_keyword_related('Vegan', yelp_id)
+    vegan_related = None
+    # vegan_related = get_keyword_related('Vegan', yelp_id)
     vegetarian = profiles.get('Vegetarian')
     vegetarian_avg = aspect_avg(vegetarian, total_doc)
-    vegetarian_related = get_keyword_related('Vegetarian', yelp_id)
+    vegetarian_related = None
+    # vegetarian_related = get_keyword_related('Vegetarian', yelp_id)
     dietary = {
         'gluten_free': gluten_free, 
         'gluten_free_avg': gluten_free_avg,
@@ -238,25 +241,32 @@ def venue_detail_request(url, params):
 
     dating = purposes.get('Dating')
     dating_avg = aspect_avg(dating, total_doc)
-    dating_related = get_keyword_related('Dating', yelp_id)
+    dating_related = None
+    # dating_related = get_keyword_related('Dating', yelp_id)
     family = purposes.get('Family')
     family_avg = aspect_avg(family, total_doc)
-    family_related = get_keyword_related('Family', yelp_id)
+    dating_related = None
+    # family_related = get_keyword_related('Family', yelp_id)
     friend = purposes.get('Friend')
     friend_avg = aspect_avg(friend, total_doc)
-    friend_related = get_keyword_related('Friend', yelp_id)
+    friend_related = None
+    # friend_related = get_keyword_related('Friend', yelp_id)
     noise = profiles.get('Noise')
     noise_avg = aspect_avg(noise, total_doc)
-    noise_related = get_keyword_related('Noise', yelp_id)
+    noise_related = None
+    # noise_related = get_keyword_related('Noise', yelp_id)
     parking = profiles.get('Parking')
     parking_avg = aspect_avg(parking, total_doc)
-    parking_related = get_keyword_related('Parking', yelp_id)
+    parking_related = None
+    # parking_related = get_keyword_related('Parking', yelp_id)
     view = profiles.get('View')
     view_avg = aspect_avg(view, total_doc)
-    view_related = get_keyword_related('View', yelp_id)
+    view_related = None
+    # view_related = get_keyword_related('View', yelp_id)
     wait = profiles.get('Waiting')
     wait_avg = aspect_avg(wait, total_doc)
-    wait_related = get_keyword_related('Waiting', yelp_id)
+    wait_related = None
+    # wait_related = get_keyword_related('Waiting', yelp_id)
     venue_preference = {
         'dating': dating,
         'dating_avg': dating_avg,

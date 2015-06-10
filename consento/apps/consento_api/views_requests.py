@@ -36,9 +36,10 @@ def venue_search_request(url, params):
         address = doc.get('pAddresses')[0]
         location = doc.get('pLatLong')
         category = doc.get('type')
-        total_count = doc.get('pTotalComments')
+        total_count = doc.get('pTotalSegNum')
         doc_count = doc.get('numFoundSeg')
         positive_comments = doc.get('pPositiveComments')
+        positive_comments = doc.get('pSentiSegNum') if not positive_comments else positive_comments
         negative_comments = doc.get('pNegativeComments')
         pos_rate = None
         storecd = None #Dummy for error

@@ -182,6 +182,8 @@ def venue_detail_request(url, params):
     # Overall
     positive = response.get('pPositiveComments')
     negative = response.get('pNegativeComments')
+    positive = response.get('pSentiSegNum') if not positive else positive
+    negative = doc_count - positive if not negative else negative
     overall = {'positive': positive, 'negative': negative}
 
     # Pref Relateds
@@ -346,7 +348,7 @@ def get_keyword_related(keyword, oid=None):
             response = response.json()
             top_keywords = response.get('TopKeywords').get('RESTAURANT')
 
-            top_keywords = '\t'.join(top_keyword[0] for top_keyword in top_keywords)
+            top_keywords = '\t'.join(top_keyword[0] for top_keyword in top_keywords[:5])
 
             cache.set(query, top_keywords)
         except:

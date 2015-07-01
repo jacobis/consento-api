@@ -110,7 +110,7 @@ def venue_home_request(url, params):
         keyword = {
             'keyword': top_keyword[0],
             'rank': index + 1,
-            'related': get_keyword_related(top_keyword[0])
+            'related': get_keyword_related(top_keyword[0], None, True)
         }
 
         keyword_list.append(keyword)
@@ -175,7 +175,7 @@ def venue_detail_request(url, params):
 
     # Keyword
     try:
-        keyword = [{'name':tp['name'], 'rank':tp['rank'], 'count':tp['Human'], 'related':get_keyword_related(tp['name'])} for tp in response.get('pTopPhrase')]
+        keyword = [{'name':tp['name'], 'rank':tp['rank'], 'count':tp['Human'], 'related':get_keyword_related(tp['name']), None, False} for tp in response.get('pTopPhrase')]
     except:
         keyword = None
 
@@ -295,7 +295,7 @@ def venue_detail_request(url, params):
         'wait_related': wait_related
     }
 
-    venue = {'meta': meta, 'doc_count': {'total_doc': doc_count}, 'overall': overall, 'image': image, 'keyword': keyword, 'meal_type': meal_types, 'dietary': dietary, 'venue_preference': venue_preference}
+    venue = {'meta': meta, 'doc_count': {'total_doc': str(total_doc)}, 'overall': overall, 'image': image, 'keyword': keyword, 'meal_type': meal_types, 'dietary': dietary, 'venue_preference': venue_preference}
 
     return venue
 
@@ -318,7 +318,7 @@ def get_image(key):
     return thumbnail
 
 
-def get_keyword_related(keyword, oid=None):
+def get_keyword_related(keyword, oid=None, tab=True):
     url = 'http://solrcloud0-320055289.us-west-1.elb.amazonaws.com/s'
     params = {'ocat': 1, 't': 'lt'}
 
@@ -334,6 +334,9 @@ def get_keyword_related(keyword, oid=None):
         params['q'] = '"%s"' % query
         query = '%s' % (query.replace(' ', '_'))
 
+    if tab:
+        query = query + '_t'
+
     cached_keywords = cache.get(query)
 
     if cached_keywords:
@@ -348,7 +351,10 @@ def get_keyword_related(keyword, oid=None):
             response = response.json()
             top_keywords = response.get('TopKeywords').get('RESTAURANT')
 
-            top_keywords = '\t'.join(top_keyword[0] for top_keyword in top_keywords[:5])
+            if tab:
+                top_keywords = '\t'.join(top_keyword[0] for top_keyword in top_keywords[:5])
+            else:
+                top_keywords = [top_keyword[0] for top_keyword in top_keywords[:5]]
 
             cache.set(query, top_keywords)
         except:

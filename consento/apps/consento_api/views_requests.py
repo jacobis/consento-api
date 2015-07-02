@@ -354,7 +354,7 @@ def get_keyword_related(keyword, oid=None, tab=True):
             if tab:
                 top_keywords = '\t'.join(top_keyword[0] for top_keyword in top_keywords[:5])
             else:
-                top_keywords = [top_keyword[0] for top_keyword in top_keywords[:5]]
+                top_keywords = {rank+1: top_keyword[0] for rank, top_keyword in enumerate(top_keywords[:5])}
 
             cache.set(query, top_keywords)
         except:
